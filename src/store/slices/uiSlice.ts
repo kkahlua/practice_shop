@@ -8,6 +8,11 @@ interface UiState {
     cart: boolean;
     checkout: boolean;
   };
+  toast: {
+    show: boolean;
+    message: string;
+    type: "success" | "error" | "info";
+  };
 }
 
 const initialState: UiState = {
@@ -17,6 +22,11 @@ const initialState: UiState = {
     signup: false,
     cart: false,
     checkout: false,
+  },
+  toast: {
+    show: false,
+    message: "",
+    type: "info",
   },
 };
 
@@ -36,9 +46,31 @@ const uiSlice = createSlice({
     ) => {
       state.modals[action.payload.modal] = action.payload.status;
     },
+    showToast: (
+      state,
+      action: PayloadAction<{
+        message: string;
+        type: "success" | "error" | "info";
+      }>
+    ) => {
+      state.toast = {
+        show: true,
+        message: action.payload.message,
+        type: action.payload.type,
+      };
+    },
+    hideToast: (state) => {
+      state.toast.show = false;
+    },
   },
 });
 
-export const { toggleDarkMode, setDarkMode, setModalStatus } = uiSlice.actions;
+export const {
+  toggleDarkMode,
+  setDarkMode,
+  setModalStatus,
+  showToast,
+  hideToast,
+} = uiSlice.actions;
 
 export default uiSlice.reducer;

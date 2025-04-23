@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./store";
 import { useEffect } from "react";
 import { setDarkMode } from "./store/slices/uiSlice";
+import Toast from "./components/ui/Toast";
 
 function App() {
   const dispatch = useDispatch();
@@ -60,6 +61,7 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
+        <Toast />
       </div>
     </BrowserRouter>
   );
