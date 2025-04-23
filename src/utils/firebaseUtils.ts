@@ -5,6 +5,7 @@ import {
   setDoc,
   getDoc,
   addDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
@@ -77,6 +78,26 @@ export const createDocumentWithTimestamp = async <T extends object>(
     }
   } catch (error) {
     console.error("Error creating document:", error);
+    throw error;
+  }
+};
+
+// 도큐먼트를 업데이트하고 updatedAt Timestamp를 자동으로 업데이트하는 함수
+export const updateDocumentWithTimestamp = async <T extends object>(
+  collectionName: string,
+  docId: string,
+  data: Partial<T>
+): Promise<void> => {
+  try {
+    const docRef = doc(db, collectionName, docId);
+    const timestamp = Timestamp.now();
+
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: timestamp,
+    });
+  } catch (error) {
+    console.error("Error updating document:", error);
     throw error;
   }
 };

@@ -10,6 +10,7 @@ import { User } from "../../types";
 import {
   createDocumentWithTimestamp,
   getDocumentWithMillis,
+  updateDocumentWithTimestamp,
 } from "../../utils/firebaseUtils";
 
 interface AuthState {
@@ -109,6 +110,60 @@ export const signOut = createAsyncThunk(
   }
 );
 
+// 사용자 정보 업데이트
+export const updateUserProfile = createAsyncThunk(
+  "auth/updateUserProfile",
+  async (
+    {
+      userId,
+      displayName,
+      photoURL,
+      address,
+      phoneNumber,
+    }: {
+      userId: string;
+      displayName?: string;
+      photoURL?: string;
+      address?: string;
+      phoneNumber?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      // Firebase Auth 유저 정보 업데이트
+      if (auth.currentUser) {
+        if (displayName) {
+          await updateProfile(auth.currentUser, { displayName });
+        }
+        if (photoURL) {
+          await updateProfile(auth.currentUser, { photoURL });
+        }
+      }
+
+      // Firestore 유저 정보 업데이트
+      const updateData: Partial<User> = {};
+
+      if (displayName) updateData.displayName = displayName;
+      if (photoURL) updateData.photoURL = photoURL;
+      if (address) updateData.address = address;
+      if (phoneNumber) updateData.phoneNumber = phoneNumber;
+
+      await updateDocumentWithTimestamp("users", userId, updateData);
+
+      // 업데이트된 유저 정보 가져오기
+      const updatedUser = await getDocumentWithMillis<User>("users", userId);
+
+      if (!updatedUser) {
+        throw new Error("Failed to retrieve updated user data");
+      }
+
+      return updatedUser;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -158,6 +213,19 @@ const authSlice = createSlice({
         state.user = null;
       })
       .addCase(signOut.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      //Profile
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
