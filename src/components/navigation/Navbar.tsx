@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import { toggleDarkMode } from "../../store/slices/uiSlice";
-
 import { ShoppingCart, Heart, Search, Menu, X, Sun, Moon } from "lucide-react";
+import { setModalStatus, toggleDarkMode } from "../../store/slices/uiSlice";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -79,10 +78,20 @@ const Navbar = () => {
             </Link>
 
             <div className="flex items-center space-x-4">
-              <button className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition">
+              <button
+                onClick={() =>
+                  dispatch(setModalStatus({ modal: "login", status: true }))
+                }
+                className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+              >
                 Log In
               </button>
-              <button className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition">
+              <button
+                onClick={() =>
+                  dispatch(setModalStatus({ modal: "signup", status: true }))
+                }
+                className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition"
+              >
                 Sign Up
               </button>
             </div>
@@ -149,6 +158,9 @@ const Navbar = () => {
                 <li>
                   <button
                     onClick={() => {
+                      dispatch(
+                        setModalStatus({ modal: "login", status: true })
+                      );
                       toggleMobileMenu();
                     }}
                     className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
@@ -159,6 +171,9 @@ const Navbar = () => {
                 <li>
                   <button
                     onClick={() => {
+                      dispatch(
+                        setModalStatus({ modal: "signup", status: true })
+                      );
                       toggleMobileMenu();
                     }}
                     className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
