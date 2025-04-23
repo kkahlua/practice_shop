@@ -2,14 +2,39 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import { ShoppingCart, Heart, Search, Menu, X, Sun, Moon } from "lucide-react";
+import { signOut } from "../../store/slices/authSlice";
 import { setModalStatus, toggleDarkMode } from "../../store/slices/uiSlice";
+import {
+  ShoppingCart,
+  Heart,
+  User,
+  Search,
+  Menu,
+  X,
+  LogOut,
+  Package,
+  Sun,
+  Moon,
+  Star,
+} from "lucide-react";
+import {
+  Menu as HeadlessMenu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from "@headlessui/react";
 
 const Navbar = () => {
   const dispatch = useDispatch();
-
+  const { user } = useSelector((state: RootState) => state.auth);
   const { darkMode } = useSelector((state: RootState) => state.ui);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleLogout = () => {
+    dispatch(signOut() as any);
+  };
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -60,7 +85,12 @@ const Navbar = () => {
               Products
             </Link>
 
-            <button className="relative text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition">
+            <button
+              onClick={() =>
+                dispatch(setModalStatus({ modal: "cart", status: true }))
+              }
+              className="relative text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+            >
               <ShoppingCart size={24} />
               <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 ?
@@ -77,29 +107,125 @@ const Navbar = () => {
               </span>
             </Link>
 
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() =>
-                  dispatch(setModalStatus({ modal: "login", status: true }))
-                }
-                className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
-              >
-                Log In
-              </button>
-              <button
-                onClick={() =>
-                  dispatch(setModalStatus({ modal: "signup", status: true }))
-                }
-                className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition"
-              >
-                Sign Up
-              </button>
-            </div>
+            {user ? (
+              <HeadlessMenu as="div" className="relative">
+                <MenuButton className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-full h-full p-1" />
+                    )}
+                  </div>
+                </MenuButton>
+                <Transition
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white dark:bg-secondary-light rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="py-1">
+                      <MenuItem>
+                        {({ active }) => (
+                          <Link
+                            to="/profile"
+                            className={`${
+                              active
+                                ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                : "text-gray-700 dark:text-gray-300"
+                            } flex items-center px-4 py-2 text-sm`}
+                          >
+                            <User size={16} className="mr-2" />
+                            Profile
+                          </Link>
+                        )}
+                      </MenuItem>
+                      <MenuItem>
+                        {({ active }) => (
+                          <Link
+                            to="/orders"
+                            className={`${
+                              active
+                                ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                : "text-gray-700 dark:text-gray-300"
+                            } flex items-center px-4 py-2 text-sm`}
+                          >
+                            <Package size={16} className="mr-2" />
+                            My Orders
+                          </Link>
+                        )}
+                      </MenuItem>
+                      <MenuItem>
+                        {({ active }) => (
+                          <Link
+                            to="/my-reviews"
+                            className={`${
+                              active
+                                ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                : "text-gray-700 dark:text-gray-300"
+                            } flex items-center px-4 py-2 text-sm`}
+                          >
+                            <Star size={16} className="mr-2" />
+                            My Reviews
+                          </Link>
+                        )}
+                      </MenuItem>
+                      <MenuItem>
+                        {({ active }) => (
+                          <button
+                            onClick={handleLogout}
+                            className={`${
+                              active
+                                ? "bg-gray-100 dark:bg-gray-700 text-primary"
+                                : "text-gray-700 dark:text-gray-300"
+                            } flex items-center w-full text-left px-4 py-2 text-sm`}
+                          >
+                            <LogOut size={16} className="mr-2" />
+                            Log Out
+                          </button>
+                        )}
+                      </MenuItem>
+                    </div>
+                  </MenuItems>
+                </Transition>
+              </HeadlessMenu>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() =>
+                    dispatch(setModalStatus({ modal: "login", status: true }))
+                  }
+                  className="text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() =>
+                    dispatch(setModalStatus({ modal: "signup", status: true }))
+                  }
+                  className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
           </nav>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-4">
-            <button className="relative text-gray-700 dark:text-gray-300">
+            <button
+              onClick={() =>
+                dispatch(setModalStatus({ modal: "cart", status: true }))
+              }
+              className="relative text-gray-700 dark:text-gray-300"
+            >
               <ShoppingCart size={24} />
               <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 ?
@@ -153,36 +279,77 @@ const Navbar = () => {
                   Wishlist
                 </Link>
               </li>
-
-              <>
-                <li>
-                  <button
-                    onClick={() => {
-                      dispatch(
-                        setModalStatus({ modal: "login", status: true })
-                      );
-                      toggleMobileMenu();
-                    }}
-                    className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
-                  >
-                    Log In
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {
-                      dispatch(
-                        setModalStatus({ modal: "signup", status: true })
-                      );
-                      toggleMobileMenu();
-                    }}
-                    className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
-                  >
-                    Sign Up
-                  </button>
-                </li>
-              </>
-
+              {user ? (
+                <>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="block text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                      onClick={toggleMobileMenu}
+                    >
+                      Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/orders"
+                      className="block text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                      onClick={toggleMobileMenu}
+                    >
+                      My Orders
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/my-reviews"
+                      className="block text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                      onClick={toggleMobileMenu}
+                    >
+                      My Reviews
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        toggleMobileMenu();
+                      }}
+                      className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                    >
+                      Log Out
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <button
+                      onClick={() => {
+                        dispatch(
+                          setModalStatus({ modal: "login", status: true })
+                        );
+                        toggleMobileMenu();
+                      }}
+                      className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                    >
+                      Log In
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        dispatch(
+                          setModalStatus({ modal: "signup", status: true })
+                        );
+                        toggleMobileMenu();
+                      }}
+                      className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
+                    >
+                      Sign Up
+                    </button>
+                  </li>
+                </>
+              )}
               <li>
                 <button
                   onClick={() => {

@@ -17,6 +17,11 @@ import { RootState } from "./store";
 import { useEffect } from "react";
 import { setDarkMode } from "./store/slices/uiSlice";
 import Toast from "./components/ui/Toast";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./config/firebase";
+import { getDocumentWithMillis } from "./utils/firebaseUtils";
+import { User } from "./types";
+import { setUser } from "./store/slices/authSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -38,6 +43,24 @@ function App() {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
+
+  // 로그인 상태 감지
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // 로그인 상태일 때 Firestore에서 사용자 정보 가져오기
+        const user = await getDocumentWithMillis<User>(
+          "users",
+          firebaseUser.uid
+        );
+        dispatch(setUser(user));
+      } else {
+        dispatch(setUser(null));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
 
   return (
     <BrowserRouter>
