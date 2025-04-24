@@ -130,19 +130,19 @@ const WishlistPage = () => {
                   {item.product.discountPercentage ? (
                     <>
                       <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                        $
                         {(
                           item.product.price *
                           (1 - item.product.discountPercentage / 100)
-                        ).toFixed(2)}
+                        ).toLocaleString("ko-KR")}
+                        원
                       </span>
                       <span className="ml-2 text-sm line-through text-gray-500">
-                        ${item.product.price.toFixed(2)}
+                        {item.product.price.toLocaleString("ko-KR")}원
                       </span>
                     </>
                   ) : (
                     <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                      ${item.product.price.toFixed(2)}
+                      {item.product.price.toLocaleString("ko-KR")}원
                     </span>
                   )}
                 </div>

@@ -55,7 +55,7 @@ const CartSidebar = () => {
       <div className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white dark:bg-secondary shadow-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            Your Cart
+            장바구니
           </h2>
           <button
             onClick={closeCart}
@@ -76,7 +76,7 @@ const CartSidebar = () => {
               className="text-gray-300 dark:text-gray-600 mb-4"
             />
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Your cart is empty
+              장바구니가 비었어요
             </p>
             <button
               onClick={() => {
@@ -85,7 +85,7 @@ const CartSidebar = () => {
               }}
               className="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-lg transition"
             >
-              Start Shopping
+              쇼핑하기
             </button>
           </div>
         ) : (
@@ -110,7 +110,7 @@ const CartSidebar = () => {
                     </h3>
                     <div className="flex items-center mt-1">
                       <span className="text-gray-600 dark:text-gray-400">
-                        ${item.product.price.toFixed(2)}
+                        {item.product.price}원
                       </span>
                       <span className="mx-2 text-gray-500 dark:text-gray-500">
                         ×
@@ -161,16 +161,16 @@ const CartSidebar = () => {
         {items.length > 0 && (
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex justify-between mb-4">
-              <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+              <span className="text-gray-600 dark:text-gray-400">합계</span>
               <span className="font-medium text-gray-900 dark:text-white">
-                ${calculateTotal().toFixed(2)}
+                {calculateTotal().toLocaleString("ko-KR")}원
               </span>
             </div>
             <button
               onClick={handleCheckout}
               className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-lg transition"
             >
-              Checkout
+              결제
             </button>
           </div>
         )}
