@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { signOut } from "../../store/slices/authSlice";
 import { setModalStatus, toggleDarkMode } from "../../store/slices/uiSlice";
+import { fetchCart } from "../../store/slices/cartSlice";
+import { fetchWishlist } from "../../store/slices/wishlistSlice";
 import {
   ShoppingCart,
   Heart,
@@ -26,14 +28,34 @@ import {
 } from "@headlessui/react";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { items: cartItems } = useSelector((state: RootState) => state.cart);
+  const { items: wishlistItems } = useSelector(
+    (state: RootState) => state.wishlist
+  );
   const { darkMode } = useSelector((state: RootState) => state.ui);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // 사용자 정보가 있을 때 장바구니와 위시리스트 가져오기
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchCart(user.id) as any);
+      dispatch(fetchWishlist(user.id) as any);
+    }
+  }, [user, dispatch]);
+
   const handleLogout = () => {
     dispatch(signOut() as any);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchTerm)}`);
+    }
   };
 
   const toggleMobileMenu = () => {
@@ -53,11 +75,13 @@ const Navbar = () => {
 
           {/* Desktop Search */}
           <div className="hidden md:block flex-grow max-w-2xl mx-8">
-            <form className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
                 placeholder="Search products..."
                 className="w-full py-2 px-4 rounded-lg bg-gray-100 dark:bg-secondary-light focus:outline-none focus:ring-2 focus:ring-primary"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
                 type="submit"
@@ -92,9 +116,11 @@ const Navbar = () => {
               className="relative text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
             >
               <ShoppingCart size={24} />
-              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                ?
-              </span>
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItems.length}
+                </span>
+              )}
             </button>
 
             <Link
@@ -102,9 +128,11 @@ const Navbar = () => {
               className="relative text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition"
             >
               <Heart size={24} />
-              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                ?
-              </span>
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistItems.length}
+                </span>
+              )}
             </Link>
 
             {user ? (
@@ -227,9 +255,11 @@ const Navbar = () => {
               className="relative text-gray-700 dark:text-gray-300"
             >
               <ShoppingCart size={24} />
-              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                ?
-              </span>
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItems.length}
+                </span>
+              )}
             </button>
             <button
               onClick={toggleMobileMenu}
@@ -242,11 +272,13 @@ const Navbar = () => {
 
         {/* Mobile Search - Always visible */}
         <div className="mt-4 md:hidden">
-          <form className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
               placeholder="Search products..."
               className="w-full py-2 px-4 rounded-lg bg-gray-100 dark:bg-secondary-light focus:outline-none focus:ring-2 focus:ring-primary"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button
               type="submit"
