@@ -28,3 +28,8 @@ export type CartItem = {
   productId: string;
   quantity: number;
 };
+
+export type WishlistItem = {
+  productId: string;
+  addedAt: number;
+};
