@@ -33,3 +33,16 @@ export type WishlistItem = {
   productId: string;
   addedAt: number;
 };
+
+export type Review = {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  userPhoto?: string;
+  rating: number;
+  comment: string;
+  photos?: string[];
+  createdAt: number;
+  updatedAt?: number;
+};
