@@ -55,72 +55,51 @@ export const fetchFilteredProducts = createAsyncThunk(
     try {
       const state = getState() as { products: ProductsState };
       const { category, priceRange, search, sortBy } = state.products.filters;
+      const allProducts = await getCollectionWithMillis<Product>("products");
 
-      const constraints = [];
+      // 필터링 로직을 클라이언트 측에서 처리
+      let filteredProducts = [...allProducts];
 
-      // 카테고리 필터
+      // 카테고리 필터링
       if (category) {
-        constraints.push({
-          field: "category",
-          operator: "==",
-          value: category,
-        });
+        filteredProducts = filteredProducts.filter(
+          (product) => product.category === category
+        );
       }
 
-      // 가격 범위 필터
+      // 가격 범위 필터링
       if (priceRange) {
-        constraints.push({
-          field: "price",
-          operator: ">=",
-          value: priceRange[0],
-        });
-
-        constraints.push({
-          field: "price",
-          operator: "<=",
-          value: priceRange[1],
-        });
+        filteredProducts = filteredProducts.filter(
+          (product) =>
+            product.price >= priceRange[0] && product.price <= priceRange[1]
+        );
       }
 
-      // 정렬 설정
-      if (sortBy === "price-asc") {
-        constraints.push({
-          orderByField: "price",
-          orderDirection: "asc" as const,
-        });
-      } else if (sortBy === "price-desc") {
-        constraints.push({
-          orderByField: "price",
-          orderDirection: "desc" as const,
-        });
-      } else if (sortBy === "rating-desc") {
-        constraints.push({
-          orderByField: "rating",
-          orderDirection: "desc" as const,
-        });
-      } else if (sortBy === "newest") {
-        constraints.push({
-          orderByField: "createdAt",
-          orderDirection: "desc" as const,
-        });
-      }
-
-      const products = await getCollectionWithMillis<Product>(
-        "products",
-        constraints
-      );
-
-      // 검색어 필터링 (클라이언트 사이드에서 처리)
-      let filteredProducts = products;
-      if (search) {
+      // 검색어 필터링
+      if (search && search.trim() !== "") {
         const searchLower = search.toLowerCase();
-        filteredProducts = products.filter(
+        filteredProducts = filteredProducts.filter(
           (product) =>
             product.name.toLowerCase().includes(searchLower) ||
             product.description.toLowerCase().includes(searchLower)
         );
       }
 
+      // 정렬 적용
+      switch (sortBy) {
+        case "price-asc":
+          filteredProducts.sort((a, b) => a.price - b.price);
+          break;
+        case "price-desc":
+          filteredProducts.sort((a, b) => b.price - a.price);
+          break;
+        case "rating-desc":
+          filteredProducts.sort((a, b) => b.rating - a.rating);
+          break;
+        case "newest":
+          filteredProducts.sort((a, b) => b.createdAt - a.createdAt);
+          break;
+      }
       return filteredProducts;
     } catch (error: any) {
       return rejectWithValue(error.message);
