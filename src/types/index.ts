@@ -46,3 +46,30 @@ export type Review = {
   createdAt: number;
   updatedAt?: number;
 };
+
+export type Order = {
+  id: string;
+  userId: string;
+  orderItems: OrderItem[];
+  totalAmount: number;
+  status: OrderStatus;
+  shippingAddress: string;
+  contactNumber: string;
+  createdAt: number;
+  updatedAt: number;
+  canCancel: boolean;
+};
+
+export type OrderItem = {
+  productId: string;
+  productName: string;
+  productImage: string;
+  quantity: number;
+  price: number;
+};
+
+export enum OrderStatus {
+  PAYMENT_COMPLETED = "PAYMENT_COMPLETED",
+  SHIPPING = "SHIPPING",
+  DELIVERED = "DELIVERED",
+}
