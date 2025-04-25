@@ -95,9 +95,9 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
   // 가격 계산 및 포맷팅을 위한 유틸리티 함수들
   const calculateDiscountedPrice = (
     originalPrice: number,
-    discountPercentage: number | null | undefined
+    discountPercentage: number | undefined
   ): string => {
-    if (discountPercentage == null)
+    if (discountPercentage === undefined)
       return originalPrice.toLocaleString("ko-KR");
     return (originalPrice * (1 - discountPercentage / 100)).toLocaleString(
       "ko-KR"
