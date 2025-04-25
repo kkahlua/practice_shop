@@ -30,7 +30,14 @@ const CartSidebar = () => {
 
   const calculateTotal = () => {
     return items.reduce((total, item) => {
-      return total + item.product.price * item.quantity;
+      if (item.product.discountPercentage == null)
+        return total + item.product.price * item.quantity;
+      return (
+        total +
+        item.product.price *
+          (1 - item.product.discountPercentage / 100) *
+          item.quantity
+      );
     }, 0);
   };
 
@@ -110,7 +117,11 @@ const CartSidebar = () => {
                     </h3>
                     <div className="flex items-center mt-1">
                       <span className="text-gray-600 dark:text-gray-400">
-                        {item.product.price}원
+                        {item.product.discountPercentage === undefined
+                          ? item.product.price
+                          : item.product.price *
+                            (1 - item.product.discountPercentage / 100)}
+                        원
                       </span>
                       <span className="mx-2 text-gray-500 dark:text-gray-500">
                         ×
