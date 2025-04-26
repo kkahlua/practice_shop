@@ -12,6 +12,7 @@ import {
   limit,
   startAfter,
   getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
@@ -176,6 +177,20 @@ export const getCollectionWithMillis = async <T>(
     return result;
   } catch (error) {
     console.error("Error getting collection:", error);
+    throw error;
+  }
+};
+
+// 도큐먼트 삭제 함수
+export const deleteDocument = async (
+  collectionName: string,
+  docId: string
+): Promise<void> => {
+  try {
+    const docRef = doc(db, collectionName, docId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting document:", error);
     throw error;
   }
 };
