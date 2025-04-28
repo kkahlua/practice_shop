@@ -6,6 +6,13 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
@@ -98,6 +105,92 @@ export const updateDocumentWithTimestamp = async <T extends object>(
     });
   } catch (error) {
     console.error("Error updating document:", error);
+    throw error;
+  }
+};
+
+// 컬렉션 데이터를 가져오고 Timestamp를 밀리초로 변환하는 함수
+export const getCollectionWithMillis = async <T>(
+  collectionName: string,
+  constraints: {
+    field?: string;
+    operator?: any;
+    value?: any;
+    orderByField?: string;
+    orderDirection?: "asc" | "desc";
+    limitCount?: number;
+    startAfterDoc?: any;
+  }[] = []
+): Promise<T[]> => {
+  try {
+    const collectionRef = collection(db, collectionName);
+    let queryRef = query(collectionRef);
+
+    if (constraints.length > 0) {
+      const queryConstraints = [];
+
+      for (const constraint of constraints) {
+        if (
+          constraint.field &&
+          constraint.operator &&
+          constraint.value !== undefined
+        ) {
+          queryConstraints.push(
+            where(constraint.field, constraint.operator, constraint.value)
+          );
+        }
+
+        if (constraint.orderByField) {
+          queryConstraints.push(
+            orderBy(constraint.orderByField, constraint.orderDirection || "asc")
+          );
+        }
+
+        if (constraint.limitCount) {
+          queryConstraints.push(limit(constraint.limitCount));
+        }
+
+        if (constraint.startAfterDoc) {
+          queryConstraints.push(startAfter(constraint.startAfterDoc));
+        }
+      }
+
+      queryRef = query(collectionRef, ...queryConstraints);
+    }
+
+    const querySnapshot = await getDocs(queryRef);
+    const result: T[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // Timestamp 객체를 밀리초로 변환
+      Object.keys(data).forEach((key) => {
+        if (data[key] instanceof Timestamp) {
+          data[key] = timestampToMillis(data[key]);
+        }
+      });
+
+      result.push({ id: doc.id, ...data } as T);
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error getting collection:", error);
+    throw error;
+  }
+};
+
+// 도큐먼트 삭제 함수
+export const deleteDocument = async (
+  collectionName: string,
+  docId: string
+): Promise<void> => {
+  try {
+    const docRef = doc(db, collectionName, docId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting document:", error);
     throw error;
   }
 };
