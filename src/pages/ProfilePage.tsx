@@ -113,11 +113,9 @@ const ProfilePage = () => {
       <div className="container mx-auto px-4 py-16 flex justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            User not found
+            사용자를 찾을 수 없어요
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Please log in to view your profile
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">로그인 해주세요</p>
         </div>
       </div>
     );
@@ -216,7 +214,7 @@ const ProfilePage = () => {
                   htmlFor="displayName"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Full Name
+                  이름
                 </label>
                 <input
                   type="text"
@@ -234,7 +232,7 @@ const ProfilePage = () => {
                   htmlFor="address"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Address
+                  주소
                 </label>
                 <textarea
                   id="address"
@@ -251,7 +249,7 @@ const ProfilePage = () => {
                   htmlFor="phoneNumber"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Phone Number
+                  전화번호
                 </label>
                 <input
                   type="tel"
@@ -272,10 +270,10 @@ const ProfilePage = () => {
                   {isSaving ? (
                     <>
                       <Loader size={18} className="animate-spin mr-2" />
-                      Saving...
+                      저장중...
                     </>
                   ) : (
-                    "Save Changes"
+                    "저장하기"
                   )}
                 </button>
               </div>

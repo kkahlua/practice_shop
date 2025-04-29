@@ -29,11 +29,11 @@ const getStatusIcon = (status: OrderStatus) => {
 const getStatusText = (status: OrderStatus) => {
   switch (status) {
     case OrderStatus.PAYMENT_COMPLETED:
-      return "Payment Completed";
+      return "결제 완료";
     case OrderStatus.SHIPPING:
-      return "Shipping";
+      return "배송중";
     case OrderStatus.DELIVERED:
-      return "Delivered";
+      return "배송완료";
     default:
       return "Unknown Status";
   }
@@ -87,7 +87,7 @@ const OrdersPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-        주문
+        주문 목록
       </h1>
 
       {orders.length === 0 ? (
@@ -122,7 +122,8 @@ const OrdersPage = () => {
                       Order #{order.id.substring(0, 8)}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Placed on {new Date(order.createdAt).toLocaleDateString()}
+                      주문 날짜:{" "}
+                      {new Date(order.createdAt).toLocaleDateString()}
                     </p>
                   </div>
 
