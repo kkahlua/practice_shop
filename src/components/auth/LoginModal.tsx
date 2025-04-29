@@ -113,16 +113,13 @@ const LoginModal = () => {
             {loading ? "Logging in..." : "Log In"}
           </button>
 
-          <div className="text-center text-gray-600 dark:text-gray-400">
-            Don't have an account?{" "}
-            <button
-              type="button"
-              onClick={switchToSignup}
-              className="text-primary hover:text-primary-dark font-medium"
-            >
-              Sign Up
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={switchToSignup}
+            className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-lg transition duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            Sign Up
+          </button>
         </form>
       </div>
     </div>
