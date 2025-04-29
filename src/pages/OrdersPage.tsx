@@ -175,7 +175,10 @@ const OrdersPage = () => {
                               {item.productName}
                             </Link>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              수량: {item.quantity} x ${item.price.toFixed(2)}
+                              수량: {item.quantity}개
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              가격: {item.price.toLocaleString("ko-KR")}원
                             </p>
                           </div>
                         </div>

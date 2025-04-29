@@ -7,7 +7,6 @@ import { showToast } from "../store/slices/uiSlice";
 import { OrderStatus } from "../types";
 import {
   ChevronLeft,
-  Clock,
   Truck,
   Check,
   MapPin,
@@ -15,6 +14,7 @@ import {
   AlertCircle,
   Loader,
   X,
+  DollarSign,
 } from "lucide-react";
 
 const OrderDetailPage = () => {
@@ -132,7 +132,7 @@ const OrderDetailPage = () => {
                   1
                 )}`}
               >
-                <Clock size={20} className="text-white" />
+                <DollarSign size={20} className="text-white" />
               </div>
               <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 결제완료

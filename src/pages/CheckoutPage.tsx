@@ -93,7 +93,7 @@ const CheckoutPage = () => {
           userId: user.id,
           orderItems,
           totalAmount: totalPrice,
-          shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
+          shippingAddress: `${formData.address1}, ${formData.address2}`,
           contactNumber: formData.phoneNumber,
         }) as any
       );
