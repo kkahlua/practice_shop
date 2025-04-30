@@ -102,9 +102,7 @@ const CheckoutPage = () => {
       await dispatch(clearCart(user.id) as any);
 
       setIsPaymentComplete(true);
-      dispatch(
-        showToast({ message: "Order placed successfully!", type: "success" })
-      );
+      dispatch(showToast({ message: "주문 완료", type: "success" }));
 
       // 3초 후 주문 페이지로 이동
       setTimeout(() => {
@@ -114,7 +112,7 @@ const CheckoutPage = () => {
       console.error("Payment error:", error);
       dispatch(
         showToast({
-          message: "Payment failed. Please try again.",
+          message: "결제 실패",
           type: "error",
         })
       );

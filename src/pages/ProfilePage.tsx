@@ -40,7 +40,7 @@ const ProfilePage = () => {
     if (file.size > maxSize) {
       dispatch(
         showToast({
-          message: "Image size should be less than 5MB",
+          message: "이미지 크기는 5MB까지 올릴 수 있어요",
           type: "error",
         })
       );
@@ -64,14 +64,14 @@ const ProfilePage = () => {
 
       dispatch(
         showToast({
-          message: "Profile photo updated successfully",
+          message: "프로필 이미지 업로드 완료",
           type: "success",
         })
       );
     } catch (error) {
       console.error("Error uploading photo:", error);
       dispatch(
-        showToast({ message: "Failed to update profile photo", type: "error" })
+        showToast({ message: "프로필 이미지 업로드 실패", type: "error" })
       );
     } finally {
       setIsUploading(false);
@@ -95,14 +95,10 @@ const ProfilePage = () => {
         }) as any
       );
 
-      dispatch(
-        showToast({ message: "Profile updated successfully", type: "success" })
-      );
+      dispatch(showToast({ message: "프로필 업데이트 완료", type: "success" }));
     } catch (error) {
       console.error("Error updating profile:", error);
-      dispatch(
-        showToast({ message: "Failed to update profile", type: "error" })
-      );
+      dispatch(showToast({ message: "프로필 업데이트 실패", type: "error" }));
     } finally {
       setIsSaving(false);
     }

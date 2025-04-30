@@ -55,9 +55,7 @@ const OrderDetailPage = () => {
     try {
       setIsCancelling(true);
       await dispatch(cancelOrder(orderId) as any);
-      dispatch(
-        showToast({ message: "주문이 취소되었습니다", type: "success" })
-      );
+      dispatch(showToast({ message: "주문 취소 완료", type: "success" }));
       setShowConfirmCancel(false);
     } catch (error) {
       console.error("Error cancelling order:", error);

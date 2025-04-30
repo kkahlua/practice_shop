@@ -90,7 +90,7 @@ const MyReviewsPage = () => {
     } catch (error) {
       console.error("Error fetching user reviews:", error);
       dispatch(
-        showToast({ message: "Failed to load your reviews", type: "error" })
+        showToast({ message: "리뷰를 불러오지 못했습니다", type: "error" })
       );
     } finally {
       setLoading(false);
@@ -125,7 +125,10 @@ const MyReviewsPage = () => {
     // Limit to 3 images
     if (editFormData.newPhotos.length + files.length > 3) {
       dispatch(
-        showToast({ message: "You can upload maximum 3 images", type: "error" })
+        showToast({
+          message: "이미지는 최대 3장까지 업로드 할 수 있습니다",
+          type: "error",
+        })
       );
       return;
     }
@@ -188,14 +191,10 @@ const MyReviewsPage = () => {
       await fetchUserReviews();
 
       setEditingReviewId(null);
-      dispatch(
-        showToast({ message: "Review updated successfully", type: "success" })
-      );
+      dispatch(showToast({ message: "리뷰 업데이트 완료", type: "success" }));
     } catch (error) {
       console.error("Error updating review:", error);
-      dispatch(
-        showToast({ message: "Failed to update review", type: "error" })
-      );
+      dispatch(showToast({ message: "리뷰 업데이트 실패", type: "error" }));
     } finally {
       setUpdating(false);
     }
@@ -214,14 +213,10 @@ const MyReviewsPage = () => {
       await fetchUserReviews();
 
       setShowDeleteConfirm(null);
-      dispatch(
-        showToast({ message: "Review deleted successfully", type: "success" })
-      );
+      dispatch(showToast({ message: "리뷰 삭제 완료", type: "success" }));
     } catch (error) {
       console.error("Error deleting review:", error);
-      dispatch(
-        showToast({ message: "Failed to delete review", type: "error" })
-      );
+      dispatch(showToast({ message: "리뷰 삭제 실패", type: "error" }));
     } finally {
       setDeletingReview(false);
     }

@@ -27,7 +27,12 @@ const WishlistPage = () => {
     if (!user) return;
 
     dispatch(removeFromWishlist({ userId: user.id, productId }) as any);
-    dispatch(showToast({ message: "Removed from wishlist", type: "info" }));
+    dispatch(
+      showToast({
+        message: "좋아요 누른 항목에서 제거되었습니다",
+        type: "info",
+      })
+    );
   };
 
   const handleAddToCart = (productId: string) => {
@@ -37,7 +42,7 @@ const WishlistPage = () => {
     }
 
     dispatch(addToCart({ userId: user.id, productId, quantity: 1 }) as any);
-    dispatch(showToast({ message: "Added to cart", type: "success" }));
+    dispatch(showToast({ message: "장바구니에 담았어요", type: "success" }));
   };
 
   if (!user) {
