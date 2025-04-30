@@ -40,7 +40,7 @@ const ProfilePage = () => {
     if (file.size > maxSize) {
       dispatch(
         showToast({
-          message: "Image size should be less than 5MB",
+          message: "이미지 크기는 5MB까지 올릴 수 있어요",
           type: "error",
         })
       );
@@ -64,14 +64,14 @@ const ProfilePage = () => {
 
       dispatch(
         showToast({
-          message: "Profile photo updated successfully",
+          message: "프로필 이미지 업로드 완료",
           type: "success",
         })
       );
     } catch (error) {
       console.error("Error uploading photo:", error);
       dispatch(
-        showToast({ message: "Failed to update profile photo", type: "error" })
+        showToast({ message: "프로필 이미지 업로드 실패", type: "error" })
       );
     } finally {
       setIsUploading(false);
@@ -95,14 +95,10 @@ const ProfilePage = () => {
         }) as any
       );
 
-      dispatch(
-        showToast({ message: "Profile updated successfully", type: "success" })
-      );
+      dispatch(showToast({ message: "프로필 업데이트 완료", type: "success" }));
     } catch (error) {
       console.error("Error updating profile:", error);
-      dispatch(
-        showToast({ message: "Failed to update profile", type: "error" })
-      );
+      dispatch(showToast({ message: "프로필 업데이트 실패", type: "error" }));
     } finally {
       setIsSaving(false);
     }
@@ -113,11 +109,9 @@ const ProfilePage = () => {
       <div className="container mx-auto px-4 py-16 flex justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            User not found
+            사용자를 찾을 수 없어요
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Please log in to view your profile
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">로그인 해주세요</p>
         </div>
       </div>
     );
@@ -216,7 +210,7 @@ const ProfilePage = () => {
                   htmlFor="displayName"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Full Name
+                  이름
                 </label>
                 <input
                   type="text"
@@ -234,7 +228,7 @@ const ProfilePage = () => {
                   htmlFor="address"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Address
+                  주소
                 </label>
                 <textarea
                   id="address"
@@ -251,7 +245,7 @@ const ProfilePage = () => {
                   htmlFor="phoneNumber"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                 >
-                  Phone Number
+                  전화번호
                 </label>
                 <input
                   type="tel"
@@ -272,10 +266,10 @@ const ProfilePage = () => {
                   {isSaving ? (
                     <>
                       <Loader size={18} className="animate-spin mr-2" />
-                      Saving...
+                      저장중...
                     </>
                   ) : (
-                    "Save Changes"
+                    "저장하기"
                   )}
                 </button>
               </div>

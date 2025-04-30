@@ -7,7 +7,6 @@ import { showToast } from "../store/slices/uiSlice";
 import { OrderStatus } from "../types";
 import {
   ChevronLeft,
-  Clock,
   Truck,
   Check,
   MapPin,
@@ -15,6 +14,7 @@ import {
   AlertCircle,
   Loader,
   X,
+  DollarSign,
 } from "lucide-react";
 
 const OrderDetailPage = () => {
@@ -55,9 +55,7 @@ const OrderDetailPage = () => {
     try {
       setIsCancelling(true);
       await dispatch(cancelOrder(orderId) as any);
-      dispatch(
-        showToast({ message: "주문이 취소되었습니다", type: "success" })
-      );
+      dispatch(showToast({ message: "주문 취소 완료", type: "success" }));
       setShowConfirmCancel(false);
     } catch (error) {
       console.error("Error cancelling order:", error);
@@ -132,7 +130,7 @@ const OrderDetailPage = () => {
                   1
                 )}`}
               >
-                <Clock size={20} className="text-white" />
+                <DollarSign size={20} className="text-white" />
               </div>
               <p className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 결제완료

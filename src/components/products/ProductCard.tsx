@@ -65,7 +65,7 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
     dispatch(
       addToCart({ userId: user.id, productId: product.id, quantity: 1 }) as any
     );
-    dispatch(showToast({ message: "Added to cart", type: "success" }));
+    dispatch(showToast({ message: "장바구니에 담았습니다", type: "success" }));
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
@@ -83,12 +83,22 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
       dispatch(
         addToWishlist({ userId: user.id, productId: product.id }) as any
       );
-      dispatch(showToast({ message: "Added to wishlist", type: "success" }));
+      dispatch(
+        showToast({
+          message: "좋아요 누른 항목에 추가되었습니다",
+          type: "success",
+        })
+      );
     } else {
       dispatch(
         removeFromWishlist({ userId: user.id, productId: product.id }) as any
       );
-      dispatch(showToast({ message: "Removed from wishlist", type: "info" }));
+      dispatch(
+        showToast({
+          message: "좋아요 누른 항목에서 제거되었습니다",
+          type: "info",
+        })
+      );
     }
   };
 
