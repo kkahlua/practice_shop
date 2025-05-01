@@ -12,6 +12,7 @@ import { Product } from "../../types";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import LazyImage from "../ui/LazyImage";
 
 interface ProductCardProps {
   product: Product;
@@ -130,10 +131,11 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
     >
       <Link to={`/products/${product.id}`} className="block">
         <div className="relative pt-[100%] bg-gray-100 dark:bg-gray-800">
-          <img
+          <LazyImage
             src={product.images[0]}
             alt={product.name}
             className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            placeholderClassName="bg-gray-200 dark:bg-gray-700"
           />
 
           {/* Wishlist button */}
