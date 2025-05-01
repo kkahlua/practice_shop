@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -220,4 +220,4 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
   );
 };
 
-export default ProductCard;
+export default memo(ProductCard);
