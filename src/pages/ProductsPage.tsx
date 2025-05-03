@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
@@ -11,18 +11,24 @@ import ProductCard from "../components/products/ProductCard";
 import ProductFilterSidebar from "../components/products/ProductFilterSidebar";
 import { Filter, Grid, List } from "lucide-react";
 import { useDebounce } from "../hooks/useDebounce";
+import { selectFilteredProducts } from "../store/selectors";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 const ProductsPage = () => {
   const dispatch = useDispatch();
   const location = useLocation();
+
+  // 일반 상태만 가져오기
   const {
-    items: products,
     loading,
     filters,
+    items: allProducts,
   } = useSelector((state: RootState) => state.products);
   const { items: wishlistItems } = useSelector(
     (state: RootState) => state.wishlist
   );
+  // 메모이제이션된 선택자 사용하기
+  const filteredProducts = useSelector(selectFilteredProducts);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -38,13 +44,13 @@ const ProductsPage = () => {
 
   // 카테고리 목록 추출
   useEffect(() => {
-    if (products.length > 0) {
+    if (allProducts.length > 0) {
       const uniqueCategories = Array.from(
-        new Set(products.map((p) => p.category))
+        new Set(allProducts.map((p) => p.category))
       );
       setCategories(uniqueCategories);
     }
-  }, [products]);
+  }, []);
 
   // URL 쿼리 파라미터에서 필터 정보 추출
   useEffect(() => {
@@ -80,34 +86,6 @@ const ProductsPage = () => {
   useEffect(() => {
     dispatch(fetchFilteredProducts() as any);
   }, [debouncedFilters, dispatch]);
-
-  // 필터링 및 정렬된 상품 목록 메모이제이션
-  const filteredProducts = useMemo(() => {
-    // 로딩 중이거나 상품이 없으면 빈 배열 반환
-    if (loading || products.length === 0) return [];
-
-    // 클라이언트 측 필터링 (서버 필터링이 부족한 경우 추가)
-    let result = [...products];
-
-    // 검색어로 추가 필터링 (더 정확한 결과를 위해)
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      result = result.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchLower) ||
-          product.description.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // 카테고리로 추가 필터링 (서버 필터링이 정확하지 않은 경우)
-    if (filters.category) {
-      result = result.filter(
-        (product) => product.category === filters.category
-      );
-    }
-
-    return result;
-  }, [products, filters.search, filters.category, loading]);
 
   // 사이드바 토글 핸들러 메모이제이션
   const toggleSidebar = useCallback(() => {
@@ -229,7 +207,7 @@ const ProductsPage = () => {
 
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <LoadingSpinner size="large" />
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12">
@@ -252,15 +230,6 @@ const ProductsPage = () => {
                   isWishlisted={isProductWishlisted(product.id)}
                 />
               ))}
-            </div>
-          )}
-
-          {/* 결과가 없을 때 표시할 메시지 */}
-          {!loading && filteredProducts.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-600 dark:text-gray-400">
-                조건에 맞는 상품이 없어요 다른 조건으로 검색해보세요😄
-              </p>
             </div>
           )}
         </div>
