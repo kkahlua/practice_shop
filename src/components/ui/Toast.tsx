@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { hideToast } from "../../store/slices/uiSlice";
@@ -66,4 +66,4 @@ const Toast = () => {
   );
 };
 
-export default Toast;
+export default memo(Toast);

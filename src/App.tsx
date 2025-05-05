@@ -1,20 +1,9 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
-import HomePage from "./pages/HomePage";
-import ProductsPage from "./pages/ProductsPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import ProfilePage from "./pages/ProfilePage";
-import MyReviewsPage from "./pages/MyReviewsPage";
-import OrdersPage from "./pages/OrdersPage";
-import OrderDetailPage from "./pages/OrderDetailPage";
-import WishlistPage from "./pages/WishlistPage";
-import NotFoundPage from "./pages/NotFoundPage";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./store";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { setDarkMode } from "./store/slices/uiSlice";
 import Toast from "./components/ui/Toast";
 import { onAuthStateChanged } from "firebase/auth";
@@ -22,6 +11,20 @@ import { auth } from "./config/firebase";
 import { getDocumentWithMillis } from "./utils/firebaseUtils";
 import { User } from "./types";
 import { setUser } from "./store/slices/authSlice";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const OrderDetailPage = lazy(() => import("./pages/OrderDetailPage"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage"));
+const MyReviewsPage = lazy(() => import("./pages/MyReviewsPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
   const dispatch = useDispatch();
@@ -69,21 +72,74 @@ function App() {
           darkMode ? "dark" : ""
         }`}
       >
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="products/:productId" element={<ProductDetailPage />} />
-            <Route path="cart" element={<CartPage />} />
-            <Route path="checkout" element={<CheckoutPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="my-reviews" element={<MyReviewsPage />} />
-            <Route path="orders" element={<OrdersPage />} />
-            <Route path="orders/:orderId" element={<OrderDetailPage />} />
-            <Route path="wishlist" element={<WishlistPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
+        <Suspense
+          fallback={
+            <div className="flex justify-center items-center h-screen">
+              <LoadingSpinner size="large" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route
+                path="products/:productId"
+                element={<ProductDetailPage />}
+              />
+              <Route path="cart" element={<CartPage />} />
+              <Route
+                path="checkout"
+                element={
+                  <ProtectedRoute>
+                    <CheckoutPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="orders"
+                element={
+                  <ProtectedRoute>
+                    <OrdersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="orders/:orderId"
+                element={
+                  <ProtectedRoute>
+                    <OrderDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="wishlist"
+                element={
+                  <ProtectedRoute>
+                    <WishlistPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="my-reviews"
+                element={
+                  <ProtectedRoute>
+                    <MyReviewsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </Routes>
+        </Suspense>
         <Toast />
       </div>
     </BrowserRouter>
