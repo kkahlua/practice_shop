@@ -13,6 +13,7 @@ import { User } from "./types";
 import { setUser } from "./store/slices/authSlice";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
+import AddProductPage from "./pages/AddProductPage";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
@@ -136,6 +137,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="add-product" element={<AddProductPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
