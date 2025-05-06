@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store";
 import LoginModal from "../components/auth/LoginModal";
 import SignupModal from "../components/auth/SignupModal";
-import CartSidebar from "../components/cart/CartSideBar";
+import CartSidebar from "../components/cart/CartSidebar";
 
 const MainLayout = () => {
   const { modals } = useSelector((state: RootState) => state.ui);
