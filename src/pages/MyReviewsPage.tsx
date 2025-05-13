@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { showToast } from "../store/slices/uiSlice";
 import {
@@ -21,14 +20,15 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 interface MyReview extends Review {
   product?: Product;
 }
 
 const MyReviewsPage = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
 
   const [reviews, setReviews] = useState<MyReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -664,7 +664,7 @@ const MyReviewsPage = () => {
                       삭제중...
                     </>
                   ) : (
-                    "리뷰를 삭제했어요"
+                    "삭제"
                   )}
                 </button>
                 <button

@@ -1,6 +1,5 @@
 import { memo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { addToCart } from "../../store/slices/cartSlice";
 import {
@@ -14,6 +13,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import LazyImage from "../ui/LazyImage";
 import useIsVisible from "../../hooks/useIsVisible";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 interface ProductCardProps {
   product: Product;
@@ -42,8 +42,8 @@ const useProductUpdates = (productId: string) => {
 };
 
 const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
   const [hover, setHover] = useState(false);
   const [liked, setLiked] = useState(isWishlisted);
 
@@ -69,7 +69,7 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
     }
 
     dispatch(
-      addToCart({ userId: user.id, productId: product.id, quantity: 1 }) as any
+      addToCart({ userId: user.id, productId: product.id, quantity: 1 })
     );
     dispatch(showToast({ message: "장바구니에 담았습니다", type: "success" }));
   };
@@ -86,9 +86,7 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
     setLiked(!liked);
 
     if (!liked) {
-      dispatch(
-        addToWishlist({ userId: user.id, productId: product.id }) as any
-      );
+      dispatch(addToWishlist({ userId: user.id, productId: product.id }));
       dispatch(
         showToast({
           message: "좋아요 누른 항목에 추가되었습니다",
@@ -96,9 +94,7 @@ const ProductCard = ({ product, isWishlisted = false }: ProductCardProps) => {
         })
       );
     } else {
-      dispatch(
-        removeFromWishlist({ userId: user.id, productId: product.id }) as any
-      );
+      dispatch(removeFromWishlist({ userId: user.id, productId: product.id }));
       dispatch(
         showToast({
           message: "좋아요 누른 항목에서 제거되었습니다",

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../../store";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { signOut } from "../../store/slices/authSlice";
 import { setModalStatus, toggleDarkMode } from "../../store/slices/uiSlice";
 import { fetchCart } from "../../store/slices/cartSlice";
@@ -26,29 +25,30 @@ import {
   MenuItems,
   Transition,
 } from "@headlessui/react";
+import { RootState } from "../../store";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { items: cartItems } = useSelector((state: RootState) => state.cart);
-  const { items: wishlistItems } = useSelector(
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { items: cartItems } = useAppSelector((state: RootState) => state.cart);
+  const { items: wishlistItems } = useAppSelector(
     (state: RootState) => state.wishlist
   );
-  const { darkMode } = useSelector((state: RootState) => state.ui);
+  const { darkMode } = useAppSelector((state: RootState) => state.ui);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   // 사용자 정보가 있을 때 장바구니와 위시리스트 가져오기
   useEffect(() => {
     if (user) {
-      dispatch(fetchCart(user.id) as any);
-      dispatch(fetchWishlist(user.id) as any);
+      dispatch(fetchCart(user.id));
+      dispatch(fetchWishlist(user.id));
     }
   }, [user, dispatch]);
 
   const handleLogout = () => {
-    dispatch(signOut() as any);
+    dispatch(signOut());
   };
 
   const handleSearch = (e: React.FormEvent) => {

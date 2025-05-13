@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import {
   fetchCart,
@@ -17,19 +16,20 @@ import {
   ArrowRight,
   ShoppingBag,
 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { items: cartItems, loading } = useSelector(
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { items: cartItems, loading } = useAppSelector(
     (state: RootState) => state.cart
   );
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchCart(user.id) as any);
+      dispatch(fetchCart(user.id));
     }
   }, [user, dispatch]);
 
@@ -47,19 +47,17 @@ const CartPage = () => {
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     if (!user) return;
-    dispatch(
-      updateCartItemQuantity({ userId: user.id, productId, quantity }) as any
-    );
+    dispatch(updateCartItemQuantity({ userId: user.id, productId, quantity }));
   };
 
   const handleRemoveItem = (productId: string) => {
     if (!user) return;
-    dispatch(removeFromCart({ userId: user.id, productId }) as any);
+    dispatch(removeFromCart({ userId: user.id, productId }));
   };
 
   const handleClearCart = () => {
     if (!user) return;
-    dispatch(clearCart(user.id) as any);
+    dispatch(clearCart(user.id));
   };
 
   const handleCheckout = () => {

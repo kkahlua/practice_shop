@@ -13,6 +13,10 @@ import {
   startAfter,
   getDocs,
   deleteDoc,
+  WhereFilterOp,
+  OrderByDirection,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 
@@ -60,12 +64,15 @@ export const createDocumentWithTimestamp = async <T extends object>(
     const timestamp = Timestamp.now();
 
     // undefined 값을 제거한 객체 생성
-    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, any>);
+    const filteredData = Object.entries(data).reduce<Record<string, unknown>>(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {}
+    );
 
     const dataWithTimestamp = {
       ...filteredData,
@@ -109,18 +116,21 @@ export const updateDocumentWithTimestamp = async <T extends object>(
   }
 };
 
+// 쿼리 제약 조건을 위한 인터페이스
+export interface QueryConstraint {
+  field?: string;
+  operator?: WhereFilterOp;
+  value?: unknown;
+  orderByField?: string;
+  orderDirection?: OrderByDirection;
+  limitCount?: number;
+  startAfterDoc?: DocumentSnapshot;
+}
+
 // 컬렉션 데이터를 가져오고 Timestamp를 밀리초로 변환하는 함수
 export const getCollectionWithMillis = async <T>(
   collectionName: string,
-  constraints: {
-    field?: string;
-    operator?: any;
-    value?: any;
-    orderByField?: string;
-    orderDirection?: "asc" | "desc";
-    limitCount?: number;
-    startAfterDoc?: any;
-  }[] = []
+  constraints: QueryConstraint[] = []
 ): Promise<T[]> => {
   try {
     const collectionRef = collection(db, collectionName);
@@ -161,7 +171,7 @@ export const getCollectionWithMillis = async <T>(
     const querySnapshot = await getDocs(queryRef);
     const result: T[] = [];
 
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach((doc: QueryDocumentSnapshot) => {
       const data = doc.data();
 
       // Timestamp 객체를 밀리초로 변환

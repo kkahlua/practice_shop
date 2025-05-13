@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import {
   fetchWishlist,
@@ -9,24 +8,25 @@ import {
 import { addToCart } from "../store/slices/cartSlice";
 import { setModalStatus, showToast } from "../store/slices/uiSlice";
 import { Heart, ShoppingCart, Trash, X } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const WishlistPage = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { items: wishlistItems, loading } = useSelector(
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { items: wishlistItems, loading } = useAppSelector(
     (state: RootState) => state.wishlist
   );
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchWishlist(user.id) as any);
+      dispatch(fetchWishlist(user.id));
     }
   }, [user, dispatch]);
 
   const handleRemoveFromWishlist = (productId: string) => {
     if (!user) return;
 
-    dispatch(removeFromWishlist({ userId: user.id, productId }) as any);
+    dispatch(removeFromWishlist({ userId: user.id, productId }));
     dispatch(
       showToast({
         message: "좋아요 누른 항목에서 제거되었습니다",
@@ -41,7 +41,7 @@ const WishlistPage = () => {
       return;
     }
 
-    dispatch(addToCart({ userId: user.id, productId, quantity: 1 }) as any);
+    dispatch(addToCart({ userId: user.id, productId, quantity: 1 }));
     dispatch(showToast({ message: "장바구니에 담았어요", type: "success" }));
   };
 

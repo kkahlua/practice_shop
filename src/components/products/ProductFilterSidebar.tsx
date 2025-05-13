@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
 import {
   fetchFilteredProducts,
   setFilters,
 } from "../../store/slices/productsSlice";
 import { X } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+
+// 정렬 옵션 타입을 명시적으로 정의
+type SortByOption = "newest" | "price-asc" | "price-desc" | "rating-desc";
 
 interface ProductFilterSidebarProps {
   categories: string[];
@@ -18,8 +21,8 @@ const ProductFilterSidebar = ({
   isOpen,
   onClose,
 }: ProductFilterSidebarProps) => {
-  const dispatch = useDispatch();
-  const { filters } = useSelector((state: RootState) => state.products);
+  const dispatch = useAppDispatch();
+  const { filters } = useAppSelector((state: RootState) => state.products);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     filters.category
@@ -27,7 +30,7 @@ const ProductFilterSidebar = ({
   const [priceRange, setPriceRange] = useState<[number, number]>(
     filters.priceRange || [0, 1000]
   );
-  const [sortBy, setSortBy] = useState<string>(filters.sortBy);
+  const [sortBy, setSortBy] = useState<SortByOption>(filters.sortBy);
 
   useEffect(() => {
     setSelectedCategory(filters.category);
@@ -50,7 +53,7 @@ const ProductFilterSidebar = ({
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value);
+    setSortBy(e.target.value as SortByOption);
   };
 
   const applyFilters = () => {
@@ -59,13 +62,13 @@ const ProductFilterSidebar = ({
       setFilters({
         category: selectedCategory,
         priceRange,
-        sortBy: sortBy as any,
+        sortBy: sortBy,
       })
     );
 
     // 별도의 액션으로 상품 다시 가져오기
     setTimeout(() => {
-      dispatch(fetchFilteredProducts() as any);
+      dispatch(fetchFilteredProducts());
     }, 0);
 
     if (window.innerWidth < 768) {
@@ -89,7 +92,7 @@ const ProductFilterSidebar = ({
 
     // 별도의 액션으로 상품 다시 가져오기
     setTimeout(() => {
-      dispatch(fetchFilteredProducts() as any);
+      dispatch(fetchFilteredProducts());
     }, 0);
   };
 

@@ -26,16 +26,12 @@ const initialState: AuthState = {
 };
 
 // 회원가입
-export const register = createAsyncThunk(
+export const register = createAsyncThunk<
+  User,
+  { email: string; password: string; displayName: string }
+>(
   "auth/register",
-  async (
-    {
-      email,
-      password,
-      displayName,
-    }: { email: string; password: string; displayName: string },
-    { rejectWithValue }
-  ) => {
+  async ({ email, password, displayName }, { rejectWithValue }) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -62,71 +58,73 @@ export const register = createAsyncThunk(
         id: firebaseUser.uid,
         ...user,
       } as User;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 로그인
-export const login = createAsyncThunk(
-  "auth/login",
-  async (
-    { email, password }: { email: string; password: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const firebaseUser = userCredential.user;
+export const login = createAsyncThunk<
+  User,
+  { email: string; password: string }
+>("auth/login", async ({ email, password }, { rejectWithValue }) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const firebaseUser = userCredential.user;
 
-      // Firestore에서 사용자 정보 가져오기
-      const user = await getDocumentWithMillis<User>("users", firebaseUser.uid);
+    // Firestore에서 사용자 정보 가져오기
+    const user = await getDocumentWithMillis<User>("users", firebaseUser.uid);
 
-      if (!user) {
-        throw new Error("User not found in database");
-      }
+    if (!user) {
+      throw new Error("User not found in database");
+    }
 
-      return user;
-    } catch (error: any) {
+    return user;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
+    return rejectWithValue("알 수 없는 오류가 발생했습니다.");
   }
-);
+});
 
 // 로그아웃
-export const signOut = createAsyncThunk(
+export const signOut = createAsyncThunk<void, void>(
   "auth/signOut",
   async (_, { rejectWithValue }) => {
     try {
       await firebaseSignOut(auth);
-      return null;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 사용자 정보 업데이트
-export const updateUserProfile = createAsyncThunk(
+export const updateUserProfile = createAsyncThunk<
+  User,
+  {
+    userId: string;
+    displayName?: string;
+    photoURL?: string;
+    address?: string;
+    phoneNumber?: string;
+  }
+>(
   "auth/updateUserProfile",
   async (
-    {
-      userId,
-      displayName,
-      photoURL,
-      address,
-      phoneNumber,
-    }: {
-      userId: string;
-      displayName?: string;
-      photoURL?: string;
-      address?: string;
-      phoneNumber?: string;
-    },
+    { userId, displayName, photoURL, address, phoneNumber },
     { rejectWithValue }
   ) => {
     try {
@@ -158,8 +156,11 @@ export const updateUserProfile = createAsyncThunk(
       }
 
       return updatedUser;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );

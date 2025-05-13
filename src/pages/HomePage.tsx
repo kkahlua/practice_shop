@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { fetchProducts } from "../store/slices/productsSlice";
 import { Product } from "../types";
@@ -12,10 +11,11 @@ import {
   CreditCard,
   Percent,
 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const HomePage = () => {
-  const dispatch = useDispatch();
-  const { items: products, loading } = useSelector(
+  const dispatch = useAppDispatch();
+  const { items: products, loading } = useAppSelector(
     (state: RootState) => state.products
   );
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -23,7 +23,7 @@ const HomePage = () => {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
 
   useEffect(() => {
-    dispatch(fetchProducts() as any);
+    dispatch(fetchProducts());
   }, [dispatch]);
 
   useEffect(() => {

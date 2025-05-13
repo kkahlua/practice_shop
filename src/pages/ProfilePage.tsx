@@ -1,14 +1,14 @@
 import { useState, useRef, ChangeEvent } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { updateUserProfile } from "../store/slices/authSlice";
 import { showToast } from "../store/slices/uiSlice";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Camera, Loader, User, Mail, Phone, MapPin } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const ProfilePage = () => {
-  const dispatch = useDispatch();
-  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { user, loading } = useAppSelector((state: RootState) => state.auth);
 
   const [formData, setFormData] = useState({
     displayName: user?.displayName || "",
@@ -59,7 +59,7 @@ const ProfilePage = () => {
         updateUserProfile({
           userId: user.id,
           photoURL,
-        }) as any
+        })
       );
 
       dispatch(
@@ -92,7 +92,7 @@ const ProfilePage = () => {
           displayName: formData.displayName,
           address: formData.address,
           phoneNumber: formData.phoneNumber,
-        }) as any
+        })
       );
 
       dispatch(showToast({ message: "프로필 업데이트 완료", type: "success" }));

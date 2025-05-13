@@ -1,4 +1,3 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../store";
 import {
@@ -7,23 +6,24 @@ import {
 } from "../../store/slices/cartSlice";
 import { setModalStatus } from "../../store/slices/uiSlice";
 import { X, Plus, Minus, ShoppingBag } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const CartSidebar = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { items, loading } = useSelector((state: RootState) => state.cart);
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { items, loading } = useAppSelector((state: RootState) => state.cart);
 
   const handleRemove = (productId: string) => {
     if (user) {
-      dispatch(removeFromCart({ userId: user.id, productId }) as any);
+      dispatch(removeFromCart({ userId: user.id, productId }));
     }
   };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
     if (user) {
       dispatch(
-        updateCartItemQuantity({ userId: user.id, productId, quantity }) as any
+        updateCartItemQuantity({ userId: user.id, productId, quantity })
       );
     }
   };
