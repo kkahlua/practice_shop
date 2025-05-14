@@ -72,18 +72,27 @@ const MyReviewsPage = () => {
       const reviewsWithProducts: MyReview[] = [];
 
       for (const review of userReviews) {
-        const product = await getCollectionWithMillis<Product>("products", [
-          {
-            field: "id",
-            operator: "==",
-            value: review.productId,
-          },
-        ]);
+        try {
+          const product = await getDocumentWithMillis<Product>(
+            "products",
+            review.productId
+          );
 
-        reviewsWithProducts.push({
-          ...review,
-          product: product[0],
-        });
+          reviewsWithProducts.push({
+            ...review,
+            product: product || undefined,
+          });
+        } catch (error) {
+          console.error(
+            `Error fetching product for review ${review.id}:`,
+            error
+          );
+          // 상품을 가져오지 못해도 리뷰는 표시
+          reviewsWithProducts.push({
+            ...review,
+            product: undefined,
+          });
+        }
       }
 
       setReviews(reviewsWithProducts);
