@@ -2,11 +2,12 @@ import { useState } from "react";
 import { collection, writeBatch, doc, Timestamp } from "firebase/firestore";
 import { db } from "../config/firebase";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { FirebaseError } from "firebase/app";
 
 function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const productsData = [
     {
@@ -198,9 +199,13 @@ function AddProductPage() {
       await batch.commit();
       console.log("모든 제품이 성공적으로 추가되었습니다!");
       setIsSuccess(true);
-    } catch (error: any) {
+    } catch (error) {
       console.error("제품 추가 중 오류 발생:", error);
-      setError(error.message);
+      setError(
+        error instanceof FirebaseError
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다"
+      );
     } finally {
       setIsLoading(false);
     }

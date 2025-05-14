@@ -17,58 +17,57 @@ const initialState: CartState = {
 };
 
 // 장바구니 가져오기
-export const fetchCart = createAsyncThunk(
-  "cart/fetchCart",
-  async (userId: string, { rejectWithValue }) => {
-    try {
-      const cartDoc = await getDoc(doc(db, "carts", userId));
-      let cartItems: CartItem[] = [];
+export const fetchCart = createAsyncThunk<
+  (CartItem & { product: Product })[],
+  string
+>("cart/fetchCart", async (userId, { rejectWithValue }) => {
+  try {
+    const cartDoc = await getDoc(doc(db, "carts", userId));
+    let cartItems: CartItem[] = [];
 
-      if (cartDoc.exists()) {
-        cartItems = cartDoc.data().items || [];
-      } else {
-        // 장바구니가 없으면 생성
-        await setDoc(doc(db, "carts", userId), { items: [] });
+    if (cartDoc.exists()) {
+      cartItems = cartDoc.data().items || [];
+    } else {
+      // 장바구니가 없으면 생성
+      await setDoc(doc(db, "carts", userId), { items: [] });
+    }
+
+    // 각 상품 정보 가져오기
+    const cartWithProducts = [];
+
+    for (const item of cartItems) {
+      const product = await getDocumentWithMillis<Product>(
+        "products",
+        item.productId
+      );
+      if (product) {
+        cartWithProducts.push({
+          ...item,
+          product,
+        });
       }
+    }
 
-      // 각 상품 정보 가져오기
-      const cartWithProducts = [];
-
-      for (const item of cartItems) {
-        const product = await getDocumentWithMillis<Product>(
-          "products",
-          item.productId
-        );
-        if (product) {
-          cartWithProducts.push({
-            ...item,
-            product,
-          });
-        }
-      }
-
-      return cartWithProducts;
-    } catch (error: any) {
+    return cartWithProducts;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
+    return rejectWithValue("알 수 없는 오류가 발생했습니다.");
   }
-);
+});
 
 // 장바구니에 상품 추가
-export const addToCart = createAsyncThunk(
+export const addToCart = createAsyncThunk<
+  CartItem & { product: Product },
+  {
+    userId: string;
+    productId: string;
+    quantity: number;
+  }
+>(
   "cart/addToCart",
-  async (
-    {
-      userId,
-      productId,
-      quantity,
-    }: {
-      userId: string;
-      productId: string;
-      quantity: number;
-    },
-    { rejectWithValue }
-  ) => {
+  async ({ userId, productId, quantity }, { rejectWithValue }) => {
     try {
       const cartRef = doc(db, "carts", userId);
       const cartDoc = await getDoc(cartRef);
@@ -113,27 +112,31 @@ export const addToCart = createAsyncThunk(
             : quantity,
         product,
       };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 장바구니 상품 수량 변경
-export const updateCartItemQuantity = createAsyncThunk(
+export const updateCartItemQuantity = createAsyncThunk<
+  {
+    productId: string;
+    quantity: number;
+    product: Product;
+    removed: boolean;
+  },
+  {
+    userId: string;
+    productId: string;
+    quantity: number;
+  }
+>(
   "cart/updateCartItemQuantity",
-  async (
-    {
-      userId,
-      productId,
-      quantity,
-    }: {
-      userId: string;
-      productId: string;
-      quantity: number;
-    },
-    { rejectWithValue }
-  ) => {
+  async ({ userId, productId, quantity }, { rejectWithValue }) => {
     try {
       const cartRef = doc(db, "carts", userId);
       const cartDoc = await getDoc(cartRef);
@@ -179,52 +182,52 @@ export const updateCartItemQuantity = createAsyncThunk(
         product,
         removed: quantity <= 0,
       };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 장바구니에서 상품 제거
-export const removeFromCart = createAsyncThunk(
-  "cart/removeFromCart",
-  async (
-    {
-      userId,
-      productId,
-    }: {
-      userId: string;
-      productId: string;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      const cartRef = doc(db, "carts", userId);
-      const cartDoc = await getDoc(cartRef);
+export const removeFromCart = createAsyncThunk<
+  { productId: string },
+  {
+    userId: string;
+    productId: string;
+  }
+>("cart/removeFromCart", async ({ userId, productId }, { rejectWithValue }) => {
+  try {
+    const cartRef = doc(db, "carts", userId);
+    const cartDoc = await getDoc(cartRef);
 
-      if (!cartDoc.exists()) {
-        throw new Error("Cart not found");
-      }
+    if (!cartDoc.exists()) {
+      throw new Error("Cart not found");
+    }
 
-      let cartItems: CartItem[] = cartDoc.data().items || [];
+    let cartItems: CartItem[] = cartDoc.data().items || [];
 
-      // 상품 제거
-      cartItems = cartItems.filter((item) => item.productId !== productId);
+    // 상품 제거
+    cartItems = cartItems.filter((item) => item.productId !== productId);
 
-      // 장바구니 업데이트
-      await setDoc(cartRef, { items: cartItems });
+    // 장바구니 업데이트
+    await setDoc(cartRef, { items: cartItems });
 
-      return { productId };
-    } catch (error: any) {
+    return { productId };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
+    return rejectWithValue("알 수 없는 오류가 발생했습니다.");
   }
-);
+});
 
 // 장바구니 비우기
-export const clearCart = createAsyncThunk(
+export const clearCart = createAsyncThunk<boolean, string>(
   "cart/clearCart",
-  async (userId: string, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
     try {
       const cartRef = doc(db, "carts", userId);
 
@@ -232,8 +235,11 @@ export const clearCart = createAsyncThunk(
       await setDoc(cartRef, { items: [] });
 
       return true;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );

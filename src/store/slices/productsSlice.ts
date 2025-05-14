@@ -5,6 +5,7 @@ import {
   getDocumentWithMillis,
   createDocumentWithTimestamp,
   updateDocumentWithTimestamp,
+  QueryConstraint,
 } from "../../utils/firebaseUtils";
 
 interface ProductsState {
@@ -36,81 +37,112 @@ const initialState: ProductsState = {
 };
 
 // 모든 상품 가져오기
-export const fetchProducts = createAsyncThunk(
+export const fetchProducts = createAsyncThunk<Product[], void>(
   "products/fetchProducts",
   async (_, { rejectWithValue }) => {
     try {
       const products = await getCollectionWithMillis<Product>("products");
       return products;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 필터링된 상품 가져오기
-export const fetchFilteredProducts = createAsyncThunk(
+export const fetchFilteredProducts = createAsyncThunk<
+  Product[],
+  void,
+  { state: { products: ProductsState } }
+>(
   "products/fetchFilteredProducts",
   async (_, { rejectWithValue, getState }) => {
     try {
-      const state = getState() as { products: ProductsState };
+      const state = getState();
       const { category, priceRange, search, sortBy } = state.products.filters;
-      const allProducts = await getCollectionWithMillis<Product>("products");
 
-      // 필터링 로직을 클라이언트 측에서 처리
-      let filteredProducts = [...allProducts];
+      const constraints: QueryConstraint[] = [];
 
-      // 카테고리 필터링
+      // 카테고리 필터
       if (category) {
-        filteredProducts = filteredProducts.filter(
-          (product) => product.category === category
-        );
+        constraints.push({
+          field: "category",
+          operator: "==",
+          value: category,
+        });
       }
 
       // 가격 범위 필터링
       if (priceRange) {
-        filteredProducts = filteredProducts.filter(
-          (product) =>
-            product.price >= priceRange[0] && product.price <= priceRange[1]
-        );
+        constraints.push({
+          field: "price",
+          operator: ">=",
+          value: priceRange[0],
+        });
+
+        constraints.push({
+          field: "price",
+          operator: "<=",
+          value: priceRange[1],
+        });
       }
 
-      // 검색어 필터링
-      if (search && search.trim() !== "") {
+      // 정렬 설정
+      if (sortBy === "price-asc") {
+        constraints.push({
+          orderByField: "price",
+          orderDirection: "asc",
+        });
+      } else if (sortBy === "price-desc") {
+        constraints.push({
+          orderByField: "price",
+          orderDirection: "desc",
+        });
+      } else if (sortBy === "rating-desc") {
+        constraints.push({
+          orderByField: "rating",
+          orderDirection: "desc",
+        });
+      } else if (sortBy === "newest") {
+        constraints.push({
+          orderByField: "createdAt",
+          orderDirection: "desc",
+        });
+      }
+
+      const products = await getCollectionWithMillis<Product>(
+        "products",
+        constraints
+      );
+
+      // 검색어 필터링 (클라이언트 사이드에서 처리)
+      let filteredProducts = products;
+      if (search) {
         const searchLower = search.toLowerCase();
-        filteredProducts = filteredProducts.filter(
+        filteredProducts = products.filter(
           (product) =>
             product.name.toLowerCase().includes(searchLower) ||
             product.description.toLowerCase().includes(searchLower)
         );
       }
 
-      // 정렬 적용
-      switch (sortBy) {
-        case "price-asc":
-          filteredProducts.sort((a, b) => a.price - b.price);
-          break;
-        case "price-desc":
-          filteredProducts.sort((a, b) => b.price - a.price);
-          break;
-        case "rating-desc":
-          filteredProducts.sort((a, b) => b.rating - a.rating);
-          break;
-        case "newest":
-          filteredProducts.sort((a, b) => b.createdAt - a.createdAt);
-          break;
-      }
       return filteredProducts;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 특정 상품 가져오기
-export const fetchProductById = createAsyncThunk(
+export const fetchProductById = createAsyncThunk<Product, string>(
   "products/fetchProductById",
-  async (productId: string, { rejectWithValue }) => {
+  async (productId, { rejectWithValue }) => {
     try {
       const product = await getDocumentWithMillis<Product>(
         "products",
@@ -122,18 +154,21 @@ export const fetchProductById = createAsyncThunk(
       }
 
       return product;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 상품 리뷰 가져오기
-export const fetchProductReviews = createAsyncThunk(
+export const fetchProductReviews = createAsyncThunk<Review[], string>(
   "products/fetchProductReviews",
-  async (productId: string, { rejectWithValue }) => {
+  async (productId, { rejectWithValue }) => {
     try {
-      const constraints = [
+      const constraints: QueryConstraint[] = [
         {
           field: "productId",
           operator: "==",
@@ -141,7 +176,7 @@ export const fetchProductReviews = createAsyncThunk(
         },
         {
           orderByField: "createdAt",
-          orderDirection: "desc" as const,
+          orderDirection: "desc",
         },
       ];
 
@@ -150,56 +185,39 @@ export const fetchProductReviews = createAsyncThunk(
         constraints
       );
       return reviews;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
+// 리뷰 데이터 인터페이스
+interface ReviewData {
+  productId: string;
+  userId: string;
+  userName: string;
+  userPhoto?: string;
+  rating: number;
+  comment: string;
+  photos?: string[];
+}
+
 // 리뷰 추가하기
-export const addReview = createAsyncThunk(
+export const addReview = createAsyncThunk<
+  { review: Review | null; product: Product | null },
+  ReviewData
+>(
   "products/addReview",
   async (
-    {
-      productId,
-      userId,
-      userName,
-      userPhoto,
-      rating,
-      comment,
-      photos,
-    }: {
-      productId: string;
-      userId: string;
-      userName: string;
-      userPhoto?: string;
-      rating: number;
-      comment: string;
-      photos?: string[];
-    },
+    { productId, userId, userName, userPhoto, rating, comment, photos },
     { rejectWithValue }
   ) => {
     try {
-      // 이미 리뷰를 작성했는지 확인
-      const existingReviews = await getCollectionWithMillis<Review>("reviews", [
-        {
-          field: "productId",
-          operator: "==",
-          value: productId,
-        },
-        {
-          field: "userId",
-          operator: "==",
-          value: userId,
-        },
-      ]);
-
-      if (existingReviews.length > 0) {
-        throw new Error("You have already reviewed this product");
-      }
-
       // 리뷰 생성
-      const review: Omit<Review, "id" | "createdAt"> = {
+      const reviewData: ReviewData = {
         productId,
         userId,
         userName,
@@ -207,11 +225,17 @@ export const addReview = createAsyncThunk(
         comment,
       };
 
-      // undefined 필드 제외
-      if (userPhoto) review.userPhoto = userPhoto;
-      if (photos && photos.length > 0) review.photos = photos;
+      // userPhoto가 있을 때만 추가
+      if (userPhoto) {
+        reviewData.userPhoto = userPhoto;
+      }
 
-      const reviewId = await createDocumentWithTimestamp("reviews", review);
+      // photos가 있을 때만 추가
+      if (photos && photos.length > 0) {
+        reviewData.photos = photos;
+      }
+
+      const reviewId = await createDocumentWithTimestamp("reviews", reviewData);
 
       // 상품의 평점 업데이트
       const product = await getDocumentWithMillis<Product>(
@@ -224,23 +248,28 @@ export const addReview = createAsyncThunk(
       }
 
       // 현재 리뷰들 가져오기
-      const allReviews = await getCollectionWithMillis<Review>("reviews", [
+      const constraints: QueryConstraint[] = [
         {
           field: "productId",
           operator: "==",
           value: productId,
         },
-      ]);
+      ];
+
+      const reviews = await getCollectionWithMillis<Review>(
+        "reviews",
+        constraints
+      );
 
       // 새로운 평균 평점 계산
-      const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
-      const newRating =
-        allReviews.length > 0 ? totalRating / allReviews.length : 0;
+      const totalRating =
+        reviews.reduce((sum, r) => sum + r.rating, 0) + rating;
+      const newRating = totalRating / (reviews.length + 1);
 
       // 상품 평점 업데이트
       await updateDocumentWithTimestamp("products", productId, {
         rating: newRating,
-        numReviews: allReviews.length,
+        numReviews: reviews.length + 1,
       });
 
       // 새로운 리뷰와 업데이트된 상품 반환
@@ -254,21 +283,25 @@ export const addReview = createAsyncThunk(
       );
 
       return { review: createdReview, product: updatedProduct };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 필터 설정
-export const setProductFilters = createAsyncThunk(
-  "products/setProductFilters",
-  async (filters: Partial<ProductsState["filters"]>, { dispatch }) => {
-    // 필터 설정 후 상품 다시 가져오기
-    dispatch(fetchFilteredProducts());
-    return filters;
-  }
-);
+export const setProductFilters = createAsyncThunk<
+  Partial<ProductsState["filters"]>,
+  Partial<ProductsState["filters"]>,
+  { state: { products: ProductsState } }
+>("products/setProductFilters", async (filters, { dispatch }) => {
+  // 필터 설정 후 상품 다시 가져오기
+  await dispatch(fetchFilteredProducts());
+  return filters;
+});
 
 const productsSlice = createSlice({
   name: "products",

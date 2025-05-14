@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { fetchCart, clearCart } from "../store/slices/cartSlice";
 import { createOrder } from "../store/slices/ordersSlice";
 import { showToast } from "../store/slices/uiSlice";
 import { OrderItem } from "../types";
 import { CreditCard, Loader, Check } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { items: cartItems, loading: cartLoading } = useSelector(
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { items: cartItems, loading: cartLoading } = useAppSelector(
     (state: RootState) => state.cart
   );
-  const { loading: orderLoading } = useSelector(
+  const { loading: orderLoading } = useAppSelector(
     (state: RootState) => state.orders
   );
 
@@ -39,7 +39,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchCart(user.id) as any);
+      dispatch(fetchCart(user.id));
     } else {
       navigate("/login");
     }
@@ -95,11 +95,11 @@ const CheckoutPage = () => {
           totalAmount: totalPrice,
           shippingAddress: `${formData.address1}, ${formData.address2}`,
           contactNumber: formData.phoneNumber,
-        }) as any
+        })
       );
 
       // 장바구니 비우기
-      await dispatch(clearCart(user.id) as any);
+      await dispatch(clearCart(user.id));
 
       setIsPaymentComplete(true);
       dispatch(showToast({ message: "주문 완료", type: "success" }));

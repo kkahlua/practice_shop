@@ -1,7 +1,6 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./store";
 import { lazy, Suspense, useEffect } from "react";
 import { setDarkMode } from "./store/slices/uiSlice";
@@ -14,6 +13,7 @@ import { setUser } from "./store/slices/authSlice";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import AddProductPage from "./pages/AddProductPage";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
@@ -28,8 +28,8 @@ const MyReviewsPage = lazy(() => import("./pages/MyReviewsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function App() {
-  const dispatch = useDispatch();
-  const { darkMode } = useSelector((state: RootState) => state.ui);
+  const dispatch = useAppDispatch();
+  const { darkMode } = useAppSelector((state: RootState) => state.ui);
 
   // 다크모드 설정
   useEffect(() => {

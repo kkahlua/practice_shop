@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { showToast } from "../store/slices/uiSlice";
 import {
@@ -21,14 +20,15 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 interface MyReview extends Review {
   product?: Product;
 }
 
 const MyReviewsPage = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
 
   const [reviews, setReviews] = useState<MyReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,18 +72,27 @@ const MyReviewsPage = () => {
       const reviewsWithProducts: MyReview[] = [];
 
       for (const review of userReviews) {
-        const product = await getCollectionWithMillis<Product>("products", [
-          {
-            field: "id",
-            operator: "==",
-            value: review.productId,
-          },
-        ]);
+        try {
+          const product = await getDocumentWithMillis<Product>(
+            "products",
+            review.productId
+          );
 
-        reviewsWithProducts.push({
-          ...review,
-          product: product[0],
-        });
+          reviewsWithProducts.push({
+            ...review,
+            product: product || undefined,
+          });
+        } catch (error) {
+          console.error(
+            `Error fetching product for review ${review.id}:`,
+            error
+          );
+          // 상품을 가져오지 못해도 리뷰는 표시
+          reviewsWithProducts.push({
+            ...review,
+            product: undefined,
+          });
+        }
       }
 
       setReviews(reviewsWithProducts);
@@ -664,7 +673,7 @@ const MyReviewsPage = () => {
                       삭제중...
                     </>
                   ) : (
-                    "리뷰를 삭제했어요"
+                    "삭제"
                   )}
                 </button>
                 <button

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { register } from "../../store/slices/authSlice";
 import { setModalStatus } from "../../store/slices/uiSlice";
 import { RootState } from "../../store";
 import { X } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const SignupModal = () => {
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state: RootState) => state.auth);
 
   const [formData, setFormData] = useState({
     displayName: "",
@@ -53,7 +53,7 @@ const SignupModal = () => {
     }
 
     try {
-      await dispatch(register({ email, password, displayName }) as any);
+      await dispatch(register({ email, password, displayName }));
       dispatch(setModalStatus({ modal: "signup", status: false }));
     } catch (error) {
       console.error("Signup error:", error);

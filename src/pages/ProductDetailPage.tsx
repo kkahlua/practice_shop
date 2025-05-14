@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
-import {
-  fetchProductById,
-  fetchProductReviews,
-  addReview,
-} from "../store/slices/productsSlice";
+import { fetchProductById, addReview } from "../store/slices/productsSlice";
 import { addToCart } from "../store/slices/cartSlice";
 import {
   addToWishlist,
@@ -35,20 +30,32 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Product, Review } from "../types";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+
+// 리뷰 제출 데이터 인터페이스 정의
+interface ReviewSubmitData {
+  productId: string;
+  userId: string;
+  userName: string;
+  userPhoto?: string;
+  rating: number;
+  comment: string;
+  photos?: string[];
+}
 
 const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { currentProduct, reviews, loading, error } = useSelector(
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { currentProduct, reviews, loading, error } = useAppSelector(
     (state: RootState) => state.products
   );
-  const { items: wishlistItems } = useSelector(
+  const { items: wishlistItems } = useAppSelector(
     (state: RootState) => state.wishlist
   );
-  const { items: cartItems } = useSelector((state: RootState) => state.cart);
-  const { orders } = useSelector((state: RootState) => state.orders);
+  const { items: cartItems } = useAppSelector((state: RootState) => state.cart);
+  const { orders } = useAppSelector((state: RootState) => state.orders);
 
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
@@ -64,8 +71,8 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     if (productId) {
-      dispatch(fetchProductById(productId) as any);
-      dispatch(fetchProductReviews(productId) as any);
+      dispatch(fetchProductById(productId));
+      // dispatch(fetchProductReviews(productId)); - 이 부분 제거
     }
   }, [productId, dispatch]);
 
@@ -171,7 +178,7 @@ const ProductDetailPage = () => {
     }
 
     if (productId) {
-      dispatch(addToCart({ userId: user.id, productId, quantity }) as any);
+      dispatch(addToCart({ userId: user.id, productId, quantity }));
       dispatch(showToast({ message: "장바구니에 담았어요", type: "success" }));
     }
   };
@@ -187,7 +194,7 @@ const ProductDetailPage = () => {
     setLiked(!liked);
 
     if (!liked) {
-      dispatch(addToWishlist({ userId: user.id, productId }) as any);
+      dispatch(addToWishlist({ userId: user.id, productId }));
       dispatch(
         showToast({
           message: "좋아요 누른 항목에 추가되었습니다",
@@ -195,7 +202,7 @@ const ProductDetailPage = () => {
         })
       );
     } else {
-      dispatch(removeFromWishlist({ userId: user.id, productId }) as any);
+      dispatch(removeFromWishlist({ userId: user.id, productId }));
       dispatch(
         showToast({
           message: "좋아요 누른 항목에서 제거되었습니다",
@@ -220,9 +227,10 @@ const ProductDetailPage = () => {
         const storage = getStorage();
 
         for (const photo of reviewData.photos) {
+          // 스토리지 경로 수정 - 공유 폴더에 저장
           const fileRef = ref(
             storage,
-            `reviews/${user.id}/${Date.now()}_${photo.name}`
+            `review-images/${Date.now()}_${photo.name}`
           );
           await uploadBytes(fileRef, photo);
           const downloadUrl = await getDownloadURL(fileRef);
@@ -230,7 +238,7 @@ const ProductDetailPage = () => {
         }
       }
 
-      const reviewSubmitData: any = {
+      const reviewSubmitData: ReviewSubmitData = {
         productId,
         userId: user.id,
         userName: user.displayName,
@@ -249,7 +257,7 @@ const ProductDetailPage = () => {
       }
 
       // Add review
-      await dispatch(addReview(reviewSubmitData) as any);
+      await dispatch(addReview(reviewSubmitData));
 
       // Reset form
       setReviewData({
@@ -298,7 +306,7 @@ const ProductDetailPage = () => {
       photos: prev.photos.filter((_, i) => i !== index),
     }));
 
-    // 메모리 누수
+    // 메모리 누수 방지
     URL.revokeObjectURL(reviewPhotoPreviews[index]);
     setReviewPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
@@ -388,7 +396,7 @@ const ProductDetailPage = () => {
             <div className="grid grid-cols-5 gap-2">
               {currentProduct.images.map((image, index) => (
                 <div
-                  key={index}
+                  key={`product-image-${index}`}
                   className={`cursor-pointer border-2 rounded-md overflow-hidden ${
                     activeImage === index
                       ? "border-primary"
@@ -417,7 +425,7 @@ const ProductDetailPage = () => {
             <div className="flex items-center text-amber-500">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
-                  key={star}
+                  key={`product-rating-${star}`}
                   size={20}
                   fill={currentProduct.rating >= star ? "currentColor" : "none"}
                   className={
@@ -598,9 +606,11 @@ const ProductDetailPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {Array.from(
+              new Map(reviews.map((review) => [review.id, review])).values()
+            ).map((review, index) => (
               <div
-                key={review.id}
+                key={`review-${review.id}-${index}`}
                 className="bg-white dark:bg-secondary-light rounded-lg shadow-sm p-6"
               >
                 <div className="flex items-start">
@@ -633,7 +643,7 @@ const ProductDetailPage = () => {
                     <div className="flex items-center mb-3">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
-                          key={star}
+                          key={`review-star-${review.id}-${index}-${star}`}
                           size={16}
                           fill={review.rating >= star ? "currentColor" : "none"}
                           className={
@@ -651,9 +661,9 @@ const ProductDetailPage = () => {
 
                     {review.photos && review.photos.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {review.photos.map((photo, index) => (
+                        {review.photos.map((photo, photoIndex) => (
                           <img
-                            key={index}
+                            key={`review-photo-${review.id}-${index}-${photoIndex}`}
                             src={photo}
                             alt={`Review by ${review.userName}`}
                             className="w-24 h-24 object-cover rounded-md cursor-pointer"
@@ -687,7 +697,7 @@ const ProductDetailPage = () => {
                 <div className="flex items-center">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
-                      key={star}
+                      key={`rating-star-${star}`}
                       type="button"
                       onClick={() =>
                         setReviewData((prev) => ({ ...prev, rating: star }))
@@ -729,7 +739,7 @@ const ProductDetailPage = () => {
                     }))
                   }
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-secondary dark:text-white"
-                  placeholder="Share your experience with this product..."
+                  placeholder="상품을 사용한 경험을 작성해주세요"
                 />
               </div>
 
@@ -739,7 +749,10 @@ const ProductDetailPage = () => {
                 </label>
                 <div className="flex items-center flex-wrap gap-2">
                   {reviewPhotoPreviews.map((preview, index) => (
-                    <div key={index} className="relative w-20 h-20">
+                    <div
+                      key={`preview-${index}`}
+                      className="relative w-20 h-20"
+                    >
                       <img
                         src={preview}
                         alt={`Review upload ${index + 1}`}

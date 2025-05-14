@@ -17,56 +17,56 @@ const initialState: WishlistState = {
 };
 
 // 위시리스트 가져오기
-export const fetchWishlist = createAsyncThunk(
-  "wishlist/fetchWishlist",
-  async (userId: string, { rejectWithValue }) => {
-    try {
-      const wishlistDoc = await getDoc(doc(db, "wishlists", userId));
-      let wishlistItems: WishlistItem[] = [];
+export const fetchWishlist = createAsyncThunk<
+  (WishlistItem & { product: Product })[],
+  string
+>("wishlist/fetchWishlist", async (userId, { rejectWithValue }) => {
+  try {
+    const wishlistDoc = await getDoc(doc(db, "wishlists", userId));
+    let wishlistItems: WishlistItem[] = [];
 
-      if (wishlistDoc.exists()) {
-        wishlistItems = wishlistDoc.data().items || [];
-      } else {
-        // 위시리스트가 없으면 생성
-        await setDoc(doc(db, "wishlists", userId), { items: [] });
+    if (wishlistDoc.exists()) {
+      wishlistItems = wishlistDoc.data().items || [];
+    } else {
+      // 위시리스트가 없으면 생성
+      await setDoc(doc(db, "wishlists", userId), { items: [] });
+    }
+
+    // 각 상품 정보 가져오기
+    const wishlistWithProducts = [];
+
+    for (const item of wishlistItems) {
+      const product = await getDocumentWithMillis<Product>(
+        "products",
+        item.productId
+      );
+      if (product) {
+        wishlistWithProducts.push({
+          ...item,
+          product,
+        });
       }
+    }
 
-      // 각 상품 정보 가져오기
-      const wishlistWithProducts = [];
-
-      for (const item of wishlistItems) {
-        const product = await getDocumentWithMillis<Product>(
-          "products",
-          item.productId
-        );
-        if (product) {
-          wishlistWithProducts.push({
-            ...item,
-            product,
-          });
-        }
-      }
-
-      return wishlistWithProducts;
-    } catch (error: any) {
+    return wishlistWithProducts;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
+    return rejectWithValue("알 수 없는 오류가 발생했습니다.");
   }
-);
+});
 
 // 위시리스트에 상품 추가
-export const addToWishlist = createAsyncThunk(
+export const addToWishlist = createAsyncThunk<
+  (WishlistItem & { product: Product }) | null,
+  {
+    userId: string;
+    productId: string;
+  }
+>(
   "wishlist/addToWishlist",
-  async (
-    {
-      userId,
-      productId,
-    }: {
-      userId: string;
-      productId: string;
-    },
-    { rejectWithValue }
-  ) => {
+  async ({ userId, productId }, { rejectWithValue }) => {
     try {
       const wishlistRef = doc(db, "wishlists", userId);
       const wishlistDoc = await getDoc(wishlistRef);
@@ -110,25 +110,25 @@ export const addToWishlist = createAsyncThunk(
       }
 
       return null; // 이미 있으면 아무 변화 없음
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 위시리스트에서 상품 제거
-export const removeFromWishlist = createAsyncThunk(
+export const removeFromWishlist = createAsyncThunk<
+  { productId: string },
+  {
+    userId: string;
+    productId: string;
+  }
+>(
   "wishlist/removeFromWishlist",
-  async (
-    {
-      userId,
-      productId,
-    }: {
-      userId: string;
-      productId: string;
-    },
-    { rejectWithValue }
-  ) => {
+  async ({ userId, productId }, { rejectWithValue }) => {
     try {
       const wishlistRef = doc(db, "wishlists", userId);
       const wishlistDoc = await getDoc(wishlistRef);
@@ -148,16 +148,19 @@ export const removeFromWishlist = createAsyncThunk(
       await setDoc(wishlistRef, { items: wishlistItems });
 
       return { productId };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 위시리스트 비우기
-export const clearWishlist = createAsyncThunk(
+export const clearWishlist = createAsyncThunk<boolean, string>(
   "wishlist/clearWishlist",
-  async (userId: string, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
     try {
       const wishlistRef = doc(db, "wishlists", userId);
 
@@ -165,8 +168,11 @@ export const clearWishlist = createAsyncThunk(
       await setDoc(wishlistRef, { items: [] });
 
       return true;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { fetchUserOrders } from "../store/slices/ordersSlice";
 import { OrderStatus } from "../types";
@@ -12,6 +11,7 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const getStatusIcon = (status: OrderStatus) => {
   switch (status) {
@@ -53,13 +53,15 @@ const getStatusColor = (status: OrderStatus) => {
 };
 
 const OrdersPage = () => {
-  const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { orders, loading } = useSelector((state: RootState) => state.orders);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { orders, loading } = useAppSelector(
+    (state: RootState) => state.orders
+  );
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchUserOrders(user.id) as any);
+      dispatch(fetchUserOrders(user.id));
     }
   }, [user, dispatch]);
 

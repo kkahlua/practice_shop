@@ -5,6 +5,7 @@ import {
   getDocumentWithMillis,
   createDocumentWithTimestamp,
   updateDocumentWithTimestamp,
+  QueryConstraint,
 } from "../../utils/firebaseUtils";
 
 interface OrdersState {
@@ -22,11 +23,11 @@ const initialState: OrdersState = {
 };
 
 // 사용자 주문 목록 가져오기
-export const fetchUserOrders = createAsyncThunk(
+export const fetchUserOrders = createAsyncThunk<Order[], string>(
   "orders/fetchUserOrders",
-  async (userId: string, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
     try {
-      const constraints = [
+      const constraints: QueryConstraint[] = [
         {
           field: "userId",
           operator: "==",
@@ -34,7 +35,7 @@ export const fetchUserOrders = createAsyncThunk(
         },
         {
           orderByField: "createdAt",
-          orderDirection: "desc" as const,
+          orderDirection: "desc",
         },
       ];
 
@@ -43,16 +44,19 @@ export const fetchUserOrders = createAsyncThunk(
         constraints
       );
       return orders;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
 
 // 특정 주문 가져오기
-export const fetchOrderById = createAsyncThunk(
+export const fetchOrderById = createAsyncThunk<Order, string>(
   "orders/fetchOrderById",
-  async (orderId: string, { rejectWithValue }) => {
+  async (orderId, { rejectWithValue }) => {
     try {
       const order = await getDocumentWithMillis<Order>("orders", orderId);
 
@@ -61,8 +65,11 @@ export const fetchOrderById = createAsyncThunk(
       }
 
       return order;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
@@ -126,13 +133,17 @@ export const createOrder = createAsyncThunk<
         "orders",
         orderId
       );
+
       if (!createdOrder) {
         throw new Error("Failed to retrieve created order");
       }
 
       return createdOrder;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
@@ -140,7 +151,7 @@ export const createOrder = createAsyncThunk<
 // 주문 취소하기
 export const cancelOrder = createAsyncThunk<Order, string>(
   "orders/cancelOrder",
-  async (orderId: string, { rejectWithValue }) => {
+  async (orderId, { rejectWithValue }) => {
     try {
       const order = await getDocumentWithMillis<Order>("orders", orderId);
 
@@ -163,13 +174,17 @@ export const cancelOrder = createAsyncThunk<Order, string>(
         "orders",
         orderId
       );
+
       if (!updatedOrder) {
         throw new Error("Failed to retrieve updated order");
       }
 
       return updatedOrder;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue("알 수 없는 오류가 발생했습니다.");
     }
   }
 );
@@ -204,9 +219,7 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrderById.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
-          state.currentOrder = action.payload;
-        }
+        state.currentOrder = action.payload;
       })
       .addCase(fetchOrderById.rejected, (state, action) => {
         state.loading = false;
@@ -219,10 +232,8 @@ const ordersSlice = createSlice({
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
-          state.currentOrder = action.payload;
-          state.orders = [action.payload, ...state.orders];
-        }
+        state.currentOrder = action.payload;
+        state.orders = [action.payload, ...state.orders];
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
@@ -235,14 +246,14 @@ const ordersSlice = createSlice({
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
-          state.currentOrder = action.payload;
-          const index = state.orders.findIndex(
-            (order) => order.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.orders[index] = action.payload;
-          }
+        state.currentOrder = action.payload;
+
+        // 주문 목록에서도 업데이트
+        const index = state.orders.findIndex(
+          (order) => order.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.orders[index] = action.payload;
         }
       })
       .addCase(cancelOrder.rejected, (state, action) => {

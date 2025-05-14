@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { fetchOrderById, cancelOrder } from "../store/slices/ordersSlice";
 import { showToast } from "../store/slices/uiSlice";
@@ -19,14 +18,15 @@ import {
   DollarSign,
 } from "lucide-react";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 const OrderDetailPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { currentOrder, loading } = useSelector(
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { currentOrder, loading } = useAppSelector(
     (state: RootState) => state.orders
   );
 
@@ -38,7 +38,7 @@ const OrderDetailPage = () => {
   // 초기 주문 로드
   useEffect(() => {
     if (orderId) {
-      dispatch(fetchOrderById(orderId) as any);
+      dispatch(fetchOrderById(orderId));
     }
   }, [orderId, dispatch]);
 
@@ -106,7 +106,7 @@ const OrderDetailPage = () => {
 
     try {
       setIsCancelling(true);
-      await dispatch(cancelOrder(orderId) as any);
+      await dispatch(cancelOrder(orderId));
       dispatch(
         showToast({ message: "주문이 취소되었습니다", type: "success" })
       );

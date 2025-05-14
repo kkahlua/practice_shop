@@ -1,12 +1,12 @@
 import { memo, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { hideToast } from "../../store/slices/uiSlice";
 import { CheckCircle, AlertCircle, Info, X } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const Toast = () => {
-  const dispatch = useDispatch();
-  const { toast } = useSelector((state: RootState) => state.ui);
+  const dispatch = useAppDispatch();
+  const { toast } = useAppSelector((state: RootState) => state.ui);
 
   useEffect(() => {
     if (toast.show) {

@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import {
   fetchProducts,
@@ -13,9 +12,18 @@ import { Filter, Grid, List } from "lucide-react";
 import { useDebounce } from "../hooks/useDebounce";
 import { selectFilteredProducts } from "../store/selectors";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+
+// 필터 타입 정의
+interface FilterUpdate {
+  category?: string | null;
+  search?: string;
+  sortBy?: "newest" | "price-asc" | "price-desc" | "rating-desc";
+  priceRange?: [number, number] | null;
+}
 
 const ProductsPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const location = useLocation();
 
   // 일반 상태만 가져오기
@@ -23,12 +31,12 @@ const ProductsPage = () => {
     loading,
     filters,
     items: allProducts,
-  } = useSelector((state: RootState) => state.products);
-  const { items: wishlistItems } = useSelector(
+  } = useAppSelector((state: RootState) => state.products);
+  const { items: wishlistItems } = useAppSelector(
     (state: RootState) => state.wishlist
   );
   // 메모이제이션된 선택자 사용하기
-  const filteredProducts = useSelector(selectFilteredProducts);
+  const filteredProducts = useAppSelector(selectFilteredProducts);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -39,7 +47,7 @@ const ProductsPage = () => {
 
   // 제품 목록 초기 로드
   useEffect(() => {
-    dispatch(fetchProducts() as any);
+    dispatch(fetchProducts());
   }, [dispatch]);
 
   // 카테고리 목록 추출
@@ -57,9 +65,14 @@ const ProductsPage = () => {
     const searchParams = new URLSearchParams(location.search);
     const categoryParam = searchParams.get("category");
     const searchParam = searchParams.get("search");
-    const sortByParam = searchParams.get("sortBy");
+    const sortByParam = searchParams.get("sortBy") as
+      | "newest"
+      | "price-asc"
+      | "price-desc"
+      | "rating-desc"
+      | null;
 
-    const newFilters: any = {};
+    const newFilters: FilterUpdate = {};
     let hasChanges = false;
 
     if (categoryParam && categoryParam !== filters.category) {
@@ -73,7 +86,7 @@ const ProductsPage = () => {
     }
 
     if (sortByParam && sortByParam !== filters.sortBy) {
-      newFilters.sortBy = sortByParam as any;
+      newFilters.sortBy = sortByParam;
       hasChanges = true;
     }
 
@@ -84,7 +97,7 @@ const ProductsPage = () => {
 
   // 디바운스된 필터로 상품 가져오기
   useEffect(() => {
-    dispatch(fetchFilteredProducts() as any);
+    dispatch(fetchFilteredProducts());
   }, [debouncedFilters, dispatch]);
 
   // 사이드바 토글 핸들러 메모이제이션
