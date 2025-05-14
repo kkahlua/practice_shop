@@ -606,9 +606,11 @@ const ProductDetailPage = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {Array.from(
+              new Map(reviews.map((review) => [review.id, review])).values()
+            ).map((review, index) => (
               <div
-                key={`review-${review.id}`}
+                key={`review-${review.id}-${index}`}
                 className="bg-white dark:bg-secondary-light rounded-lg shadow-sm p-6"
               >
                 <div className="flex items-start">
@@ -641,7 +643,7 @@ const ProductDetailPage = () => {
                     <div className="flex items-center mb-3">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
-                          key={`review-star-${review.id}-${star}`}
+                          key={`review-star-${review.id}-${index}-${star}`}
                           size={16}
                           fill={review.rating >= star ? "currentColor" : "none"}
                           className={
@@ -659,9 +661,9 @@ const ProductDetailPage = () => {
 
                     {review.photos && review.photos.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {review.photos.map((photo, index) => (
+                        {review.photos.map((photo, photoIndex) => (
                           <img
-                            key={`review-photo-${review.id}-${index}`}
+                            key={`review-photo-${review.id}-${index}-${photoIndex}`}
                             src={photo}
                             alt={`Review by ${review.userName}`}
                             className="w-24 h-24 object-cover rounded-md cursor-pointer"
