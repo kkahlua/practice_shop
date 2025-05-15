@@ -12,6 +12,7 @@ import {
   Percent,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
+import heroImage from "../images/hero-image.png";
 
 const HomePage = () => {
   const dispatch = useAppDispatch();
@@ -82,7 +83,7 @@ const HomePage = () => {
             </div>
             <div className="hidden md:block">
               <img
-                src="src/images/hero-image.png"
+                src={heroImage}
                 alt="Shopping"
                 className="rounded-lg shadow-xl"
               />
